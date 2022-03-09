@@ -1,0 +1,14 @@
+version: '3.4'
+
+services:
+  productservice.api:
+    image: ${DOCKER_REGISTRY-}productserviceapi
+    build:
+      context: .
+      dockerfile: ProductService.API/Dockerfile
+
+  mongodb_container:
+    image: mongo:latest
+    container_name: product-db
+    ports:
+      - 27017:27017

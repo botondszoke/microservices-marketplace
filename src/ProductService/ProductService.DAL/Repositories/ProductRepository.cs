@@ -18,11 +18,12 @@ namespace ProductService.DAL.Repositories
             return new DTOs.Product 
             { 
                 ID = product.ID.ToString(), 
-                OwnerID = product.OwnerID.ToString(), 
+                OwnerID = product.OwnerID.ToString(),
+                GroupID = product.GroupID?.ToString(),
                 Name = product.Name, 
                 Condition = product.Condition, 
                 Description = product.Description, 
-                StockQuantity = product.StockQuantity, 
+                IsAvailable = product.IsAvailable, 
                 PictureLinks = product.PictureLinks 
             };
 
@@ -36,10 +37,11 @@ namespace ProductService.DAL.Repositories
             {
                 ID = ObjectId.Parse(product.ID),
                 OwnerID = ObjectId.Parse(product.OwnerID),
+                GroupID = ObjectId.Parse(product.GroupID),
                 Name = product.Name,
                 Condition = product.Condition,
                 Description = product.Description,
-                StockQuantity = product.StockQuantity,
+                IsAvailable = product.IsAvailable,
                 PictureLinks = product.PictureLinks
             };
         }
@@ -89,6 +91,14 @@ namespace ProductService.DAL.Repositories
                 .ConvertProductsFromDb();
         }
 
+        public async Task<IReadOnlyCollection<DTOs.Product>> GetProductsByGroupId(string groupId)
+        {
+            return await _context
+                .Products
+                .Find(p => p.GroupID.Equals(ObjectId.Parse(groupId)))
+                .ConvertProductsFromDb();
+        }
+
         public async Task<IReadOnlyCollection<DTOs.Product>> FindProducts(FilterDefinition<Product> filter)
         {
             return await _context
@@ -118,6 +128,14 @@ namespace ProductService.DAL.Repositories
             var delete = await _context
                 .Products
                 .DeleteManyAsync(p => p.OwnerID.Equals(ObjectId.Parse(ownerId)));
+            return delete.IsAcknowledged ? delete.DeletedCount : 0;
+        }
+
+        public async Task<long> DeleteProductsByGroupId(string groupId)
+        {
+            var delete = await _context
+                .Products
+                .DeleteManyAsync(p => p.GroupID.Equals(ObjectId.Parse(groupId)));
             return delete.IsAcknowledged ? delete.DeletedCount : 0;
         }
 

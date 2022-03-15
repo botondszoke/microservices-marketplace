@@ -10,5 +10,6 @@ namespace ProductService.DAL
     public interface IProductContext
     {
         IMongoCollection<Product> Products { get; }
+        IMongoCollection<ProductGroup> ProductGroups { get; }
     }
 }

@@ -14,7 +14,7 @@ namespace ProductService.API.Controllers
         public ProductController(ProductManager pm) => this.pm = pm;
 
         [HttpGet]
-        public async Task<IEnumerable<Product>> Get() => await pm.GetAllProducts();
+        public async Task<IEnumerable<Product>> GetAll() => await pm.GetAllProducts();
 
         [HttpGet("{productId}")]
         [ProducesResponseType(200)]
@@ -35,7 +35,7 @@ namespace ProductService.API.Controllers
             var product = await pm.GetProductOrNull(productId);
             if (product == null)
                 return NotFound();
-            var result = await pm.DeleteProduct(productId);
+            var result = await pm.DeleteProduct(productId, product);
             if (!result)
                 return NotFound();
             return NoContent();
@@ -64,7 +64,7 @@ namespace ProductService.API.Controllers
             if (product == null)
                 return NotFound();
 
-            var result = await pm.UpdateProduct(productId, newProduct);
+            var result = await pm.UpdateProduct(productId, product, newProduct);
             if (!result)
                 return BadRequest();
             return Ok(newProduct);

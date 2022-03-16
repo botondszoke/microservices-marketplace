@@ -10,6 +10,7 @@ namespace ProductService.DAL
     {
         public string ConnectionString { get; set; }
         public string DatabaseName { get; set; }
-        public string CollectionName { get; set; }
+        public string ProductCollectionName { get; set; }
+        public string ProductGroupCollectionName { get; set; }
     }
 }

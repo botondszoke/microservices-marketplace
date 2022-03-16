@@ -10,11 +10,11 @@ namespace ProductService.DAL.DTOs
     {
         public string ID { get; set; }
         public string OwnerID { get; set; }
-
+        public string? GroupID { get; set; }
         public string Name { get; set; }
         public string? Description { get; set; }
         public string? Condition { get; set; }
-        public int StockQuantity { get; set; }
+        public bool IsAvailable { get; set; }
         public string[] PictureLinks { get; set; }
     }
 }

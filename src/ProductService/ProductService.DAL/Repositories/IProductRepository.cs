@@ -12,6 +12,7 @@ namespace ProductService.DAL.Repositories
         public Task<IReadOnlyCollection<DTOs.Product>> GetAllProduct();
         public Task<DTOs.Product> GetProductOrNull(string id);
         public Task<IReadOnlyCollection<DTOs.Product>> GetProductsByOwnerId(string ownerId);
+        public Task<IReadOnlyCollection<DTOs.Product>> GetProductsByGroupId(string groupId);
         public Task<IReadOnlyCollection<DTOs.Product>> FindProducts(FilterDefinition<Product> filter);
         public Task<string> CreateProduct(DTOs.Product newProduct);
         public Task<bool> DeleteProduct(string id);

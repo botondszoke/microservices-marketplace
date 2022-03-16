@@ -17,9 +17,11 @@ namespace ProductService.BL
         private bool CheckCompatibility (Product p1, Product p2)
         {
             if (p1.GroupID == p2.GroupID && p1.OwnerID == p2.OwnerID && p1.Condition == p2.Condition &&
-                p1.Description == p2.Description && p1.Name == p2.Name && p1.PictureLinks == p2.PictureLinks &&
+                p1.Description == p2.Description && p1.Name == p2.Name && p1.PictureLinks.SequenceEqual(p2.PictureLinks) &&
                 p1.IsAvailable == p2.IsAvailable)
+            {
                 return true;
+            }
             return false;
         }
 
@@ -44,7 +46,17 @@ namespace ProductService.BL
 
         public async Task<bool> UpdateProduct(string id, Product oldProduct, Product newProduct)
         {
-            // Ha csoporthoz akarjuk hozzáadni, csekkoljuk a megfelelőséget
+            //Ha nem elérhető, csak az elérhetőség változhat
+            if (!oldProduct.IsAvailable && (oldProduct.ID != newProduct.ID ||
+                oldProduct.GroupID != newProduct.GroupID ||
+                oldProduct.OwnerID != newProduct.OwnerID ||
+                oldProduct.Condition != newProduct.Condition ||
+                oldProduct.Description != newProduct.Description ||
+                oldProduct.Name != newProduct.Name ||
+                !oldProduct.PictureLinks.SequenceEqual(newProduct.PictureLinks)))
+                return false;
+
+            // Ha csoporthoz akarjuk hozzáadni, ellenőrizzük a megfelelőséget
             if (newProduct.GroupID != oldProduct.GroupID)
             {
                 if (newProduct.GroupID == null)

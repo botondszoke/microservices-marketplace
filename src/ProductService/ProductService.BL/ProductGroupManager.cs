@@ -26,10 +26,14 @@ namespace ProductService.BL
         public async Task<ProductGroup> GetProductGroupOrNull(string id)
             => await _productGroupRepository.GetProductGroupOrNull(id);
 
-        public async Task<string> CreateProductGroup(ProductGroup productGroup)
+        public async Task<ProductGroup> CreateProductGroup(ProductGroup productGroup)
         {
+
             if (productGroup.Quantity != 0)
-                return string.Empty;
+            {
+                productGroup.ID = string.Empty;
+                return productGroup;
+            }
             return await _productGroupRepository.CreateProductGroup(productGroup);
         }
 
@@ -54,6 +58,54 @@ namespace ProductService.BL
                 tran.Complete();
                 return true;
             }
+        }
+
+        public async Task<bool> UpdateProductGroup(string id, ProductGroup oldProductGroup, ProductGroup newProductGroup)
+        {
+            if (oldProductGroup.OwnerID != newProductGroup.OwnerID || oldProductGroup.Quantity != newProductGroup.Quantity)
+                return false;
+
+            if (oldProductGroup.SampleProduct.ID == newProductGroup.SampleProduct.ID &&
+                oldProductGroup.SampleProduct.GroupID == newProductGroup.SampleProduct.GroupID &&
+                oldProductGroup.SampleProduct.OwnerID == newProductGroup.SampleProduct.OwnerID &&
+                oldProductGroup.SampleProduct.Condition == newProductGroup.SampleProduct.Condition &&
+                oldProductGroup.SampleProduct.Description == newProductGroup.SampleProduct.Description &&
+                oldProductGroup.SampleProduct.Name == newProductGroup.SampleProduct.Name &&
+                oldProductGroup.SampleProduct.PictureLinks.SequenceEqual(newProductGroup.SampleProduct.PictureLinks))
+            {
+                using (var tran = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TransactionOptions() { IsolationLevel = IsolationLevel.RepeatableRead },
+                TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    IReadOnlyCollection<Product> products = await _productRepository.GetProductsByGroupId(id);
+
+                    foreach (Product product in products)
+                    {
+                        Product newProduct = new()
+                        {
+                            ID = product.ID,
+                            GroupID = product.GroupID,
+                            OwnerID = product.OwnerID,
+                            Condition = product.Condition,
+                            Description = product.Description,  
+                            Name = product.Name,
+                            PictureLinks = product.PictureLinks,
+                            IsAvailable = newProductGroup.SampleProduct.IsAvailable,
+                        };
+                        var res = await _productRepository.UpdateProduct(newProduct.ID, newProduct);
+                        if (res == false)
+                            return false;
+                    }
+                    var result = await _productGroupRepository.UpdateProductGroup(id, newProductGroup);
+                    if (result == false)
+                        return false;
+                    tran.Complete();
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

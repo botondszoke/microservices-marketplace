@@ -14,7 +14,7 @@ namespace ProductService.API.Controllers
         public ProductController(ProductManager pm) => this.pm = pm;
 
         [HttpGet]
-        public async Task<IEnumerable<Product>> GetAll() => await pm.GetAllProducts();
+        public async Task<IEnumerable<Product>> Get() => await pm.GetAllProducts();
 
         [HttpGet("{productId}")]
         [ProducesResponseType(200)]
@@ -28,7 +28,7 @@ namespace ProductService.API.Controllers
         }
 
         [HttpDelete("{productId}")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(204)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Delete(string productId)
         {
@@ -46,7 +46,7 @@ namespace ProductService.API.Controllers
         [ProducesResponseType(400)]
         public async Task<IActionResult> Create([FromBody] Product product)
         {
-            await pm.CreateProduct(product);
+            product.ID = await pm.CreateProduct(product);
             if (product.ID != string.Empty)
                 return CreatedAtAction(nameof(Get), new { id = product.ID }, product);
             return BadRequest();

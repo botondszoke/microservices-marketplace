@@ -31,7 +31,7 @@ namespace ProductService.DAL.Repositories
                 return null;
             return new ProductGroup
             {
-                ID = ObjectId.Parse(productGroup.ID),
+                ID = productGroup.ID == string.Empty ? ObjectId.Empty : ObjectId.Parse(productGroup.ID),
                 OwnerID = ObjectId.Parse(productGroup.OwnerID),
                 SampleProduct = ProductConverter.ConvertToDb(productGroup.SampleProduct),
                 //ProductIDs = productGroup.ProductIDs.Select(p => ObjectId.Parse(p.ToString())).ToArray(), 
@@ -84,12 +84,25 @@ namespace ProductService.DAL.Repositories
                 .ConvertProductGroupsFromDb();
         }
 
-        public async Task<string> CreateProductGroup(DTOs.ProductGroup productGroup)
+        public async Task<DTOs.ProductGroup> CreateProductGroup(DTOs.ProductGroup productGroup)
         {
+            productGroup.ID = string.Empty;
+            productGroup.SampleProduct.ID = string.Empty;
+            productGroup.SampleProduct.GroupID = null;
+            var dbProductGroup = ProductGroupConverter.ConvertToDb(productGroup);
             await _context
                 .ProductGroups
-                .InsertOneAsync(ProductGroupConverter.ConvertToDb(productGroup));
-            return productGroup.ID;
+                .InsertOneAsync(dbProductGroup);
+
+            dbProductGroup.SampleProduct.GroupID = dbProductGroup.ID;
+            var update = await _context
+                .ProductGroups
+                .ReplaceOneAsync(p => p.ID.Equals(dbProductGroup.ID), dbProductGroup);
+            if (!(update.IsAcknowledged && update.ModifiedCount > 0))
+                return productGroup;
+
+            productGroup = ProductGroupConverter.ConvertFromDb(dbProductGroup);
+            return productGroup;
         }
 
         public async Task<bool> DeleteProductGroup(string id)

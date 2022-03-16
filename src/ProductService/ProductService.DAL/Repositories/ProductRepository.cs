@@ -35,9 +35,9 @@ namespace ProductService.DAL.Repositories
                 return null;
             return new Product
             {
-                ID = ObjectId.Parse(product.ID),
+                ID = product.ID == string.Empty ? ObjectId.Empty : ObjectId.Parse(product.ID),
                 OwnerID = ObjectId.Parse(product.OwnerID),
-                GroupID = ObjectId.Parse(product.GroupID),
+                GroupID = product.GroupID == null ? null : ObjectId.Parse(product.GroupID),
                 Name = product.Name,
                 Condition = product.Condition,
                 Description = product.Description,
@@ -109,9 +109,12 @@ namespace ProductService.DAL.Repositories
 
         public async Task<string> CreateProduct(DTOs.Product newProduct)
         {
+            newProduct.ID = string.Empty;
+            var dbProduct = ProductConverter.ConvertToDb(newProduct);
             await _context
                 .Products
-                .InsertOneAsync(ProductConverter.ConvertToDb(newProduct));
+                .InsertOneAsync(dbProduct);
+            newProduct = ProductConverter.ConvertFromDb(dbProduct);
             return newProduct.ID;
         }
 

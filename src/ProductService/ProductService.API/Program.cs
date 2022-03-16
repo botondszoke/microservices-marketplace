@@ -26,7 +26,10 @@ builder.Services.AddSingleton<IProductDatabaseSettings>(
 builder.Services.AddSingleton<ProductDatabaseSettings>();
 builder.Services.AddSingleton<IProductContext, ProductContext>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductGroupRepository, ProductGroupRepository>();
+
 builder.Services.AddScoped<ProductManager>();
+builder.Services.AddScoped<ProductGroupManager>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

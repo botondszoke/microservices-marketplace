@@ -1,0 +1,52 @@
+using Microsoft.Extensions.Options;
+using SaleService.BL;
+using SaleService.DAL;
+using SaleService.DAL.Repositories;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+        builder => {
+            builder.WithOrigins("http://localhost:6001")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+        });
+});
+
+// Add services to the container.
+
+builder.Services.Configure<SaleDatabaseSettings>(
+    builder.Configuration.GetSection("SaleDatabaseSettings"));
+
+builder.Services.AddSingleton<ISaleDatabaseSettings>(
+    s => s.GetRequiredService<IOptions<SaleDatabaseSettings>>().Value);
+
+builder.Services.AddSingleton<SaleDatabaseSettings>();
+builder.Services.AddSingleton<ISaleContext, SaleContext>();
+builder.Services.AddScoped<ISaleRepository, SaleRepository>();
+
+builder.Services.AddScoped<SaleManager>();
+
+builder.Services.AddControllers().AddNewtonsoftJson();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();

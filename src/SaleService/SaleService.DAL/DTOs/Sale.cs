@@ -1,7 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace SaleService.DAL.DTOs
@@ -16,6 +19,7 @@ namespace SaleService.DAL.DTOs
 
         public double UnitPrice { get; set; }
 
+        [EnumDataType(typeof(Currency))]
         public Currency Currency { get; set; }
         
     }

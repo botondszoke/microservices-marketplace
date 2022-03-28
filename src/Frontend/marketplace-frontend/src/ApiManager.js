@@ -33,6 +33,15 @@ class ApiManager extends React.Component {
       return data;
     }
 
+    static async getProductGroup(id) {
+      let productGroup;
+      await productApi.get('/ProductGroup/' + id).then((response) => {
+        console.log(response);
+        productGroup = response.data;
+      })
+      return productGroup;
+    }
+
     static async getAllSales() {
       const productGroups = await this.getAllProductGroups();
       const data = [];
@@ -52,6 +61,21 @@ class ApiManager extends React.Component {
         }
       })
       return newData;
+    }
+
+    static async getSale(id) {
+      let sale;
+      await saleApi.get('/Sale/' + id).then((response) => {
+        console.log(response);
+        sale = response.data;
+      })
+      return {
+        id: sale.id,
+        ownerID: sale.ownerID,
+        productGroup: await this.getProductGroup(sale.productGroupID),
+        unitPrice: sale.unitPrice,
+        currency: sale.currency,
+      }
     }
 }
 export default ApiManager;

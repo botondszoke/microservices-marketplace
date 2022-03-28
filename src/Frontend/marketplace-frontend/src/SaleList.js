@@ -1,6 +1,7 @@
 import React from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import ApiManager from './ApiManager';
+import Box from '@mui/material/Box';
 import SaleTile from './SaleTile';
 
 class SaleList extends React.Component {
@@ -48,11 +49,10 @@ class SaleList extends React.Component {
                 );
             }
             const salesList = sales.length === 0 ? null : sales;
-            //TODO: Több tile egymás mellé, ne alá (flexbox)
             return (
-                <div name = "saleCatalog">
+                <Box id="saleCatalog" sx={{display: "flex", flexWrap:"wrap", justifyContent:"space-between", ':after':{content: '""', flex: "auto"}}}>
                     {salesList}
-                </div>
+                </Box>
             );
         };
         return (

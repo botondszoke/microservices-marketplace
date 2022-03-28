@@ -14,7 +14,7 @@ function Controls() {
     return (
       <React.Fragment>
         <AppBar position="fixed" color="basic">
-            <Container maxWidth="xl">
+            <Container maxWidth="xxl">
               <Toolbar disableGutters>
                 <Typography variant="h4" className="navbarTitle">
                   <b><i>BuYTE</i></b>

@@ -21,7 +21,7 @@ class SaleTile extends React.Component {
 
     render() {
         return (
-            <Card sx={{ maxWidth: 300 }}>
+            <Card sx={{ maxWidth: "300px", minWidth:"256px", margin: "12px" }}>
                 <CardMedia
                     component="img"
                     height="200"
@@ -33,7 +33,7 @@ class SaleTile extends React.Component {
                     {this.state.sale.productGroup.sampleProduct.name}
                     </Typography>
                     <Typography gutterBottom variant="subtitle1" component="div">
-                    {this.state.sale.unitPrice + " " + this.state.sale.currency}
+                    {this.state.sale.unitPrice + " " + this.state.sale.currency + "/pcs"}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                     Condition:

@@ -2,9 +2,11 @@ import React from "react";
 import {createTheme} from "@mui/material/styles";
 import Controls from "./Controls.js";
 import Home from "./Home.js";
-import { Route, Routes } from "react-router-dom";
+import MyProducts from "./MyProducts.js"
+import { Navigate, Route, Routes } from "react-router-dom";
 import Sales from "./Sales.js";
 import { ThemeProvider } from "@emotion/react";
+import Upload from "./Upload.js";
 
 class App extends React.Component {
 
@@ -33,8 +35,10 @@ class App extends React.Component {
       <ThemeProvider theme = {this.state.theme}>
         <Controls />
         <Routes>
-          <Route exact path="/" element={<Home/>}/>
-          <Route path="/sale/*" element={<Sales />}/>
+          <Route exact path="/" element={<Navigate to="/sales"/>}/>
+          <Route path="/myproducts/*" element={<MyProducts />}/>
+          <Route path="/sales/*" element={<Sales />}/>
+          <Route path="/upload/*" element={<Upload />}/>
         </Routes>
       </ThemeProvider>
     );

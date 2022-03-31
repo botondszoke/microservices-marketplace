@@ -84,6 +84,14 @@ namespace ProductService.DAL.Repositories
                 .ConvertProductGroupsFromDb();
         }
 
+        public async Task<IReadOnlyCollection<DTOs.ProductGroup>> GetUnavailableProductGroups()
+        {
+            return await _context
+                .ProductGroups
+                .Find(p => p.SampleProduct.IsAvailable == false)
+                .ConvertProductGroupsFromDb();
+        }
+
         public async Task<DTOs.ProductGroup> CreateProductGroup(DTOs.ProductGroup productGroup)
         {
             productGroup.ID = string.Empty;

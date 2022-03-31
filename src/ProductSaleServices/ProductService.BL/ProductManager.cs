@@ -37,6 +37,9 @@ namespace ProductService.BL
         public async Task<Product> GetProductOrNull(string id)
             => await _productRepository.GetProductOrNull(id);
 
+        public async Task<IReadOnlyCollection<Product>> GetProductsByOwnerId(string ownerId)
+            => await _productRepository.GetProductsByOwnerId(ownerId);
+
         public async Task<string> CreateProduct(Product product)
         {
             if (product.GroupID != null)
@@ -203,6 +206,26 @@ namespace ProductService.BL
                     return false;
                 tran.Complete();
                 return true;
+            }
+        }
+
+        public async Task<Product> SoldProductFromGroup(string groupId, string newOwnerId)
+        {
+            using (var tran = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TransactionOptions() { IsolationLevel = IsolationLevel.RepeatableRead },
+                TransactionScopeAsyncFlowOption.Enabled))
+            {
+                IReadOnlyCollection<Product> products = await _productRepository.GetProductsByGroupId(groupId);
+                if (products.Count <= 0)
+                    return new Product() { ID = string.Empty};
+
+                var productId = products.First().ID;
+                var result = await this.SoldProduct(products.First(), newOwnerId);
+                if (result == false)
+                    return null;
+
+                return await _productRepository.GetProductOrNull(productId);
             }
         }
     }

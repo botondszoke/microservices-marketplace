@@ -13,10 +13,20 @@ namespace ProductService.API.Controllers
 
         public ProductGroupController(ProductGroupManager pm) => this.pm = pm;
 
+        [Route("queries")]
         [HttpGet]
         public async Task<IEnumerable<ProductGroup>> Get() => await pm.GetAllProductGroups();
 
-        [HttpGet("{productGroupId}")]
+        [Route("queries/unavailable")]
+        [HttpGet]
+        public async Task<IEnumerable<ProductGroup>> GetUnavailableProductGroups() => await pm.GetUnavailableProductGroups();
+
+        [Route("queries/ownerId/{ownerId}")]
+        [HttpGet]
+        public async Task<IEnumerable<ProductGroup>> GetProductGroupsByOwnerId(string ownerId) => await pm.GetProductGroupsByOwnerId(ownerId);
+
+
+        [HttpGet("queries/id/{productGroupId}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         public async Task<ActionResult<Product>> Get(string productGroupId)

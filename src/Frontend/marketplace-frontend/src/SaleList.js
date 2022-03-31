@@ -2,7 +2,10 @@ import React from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import ApiManager from './ApiManager';
 import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Divider from '@mui/material/Divider';
 import SaleTile from './SaleTile';
+import Typography from '@mui/material/Typography';
 
 class SaleList extends React.Component {
 
@@ -50,9 +53,16 @@ class SaleList extends React.Component {
             }
             const salesList = sales.length === 0 ? null : sales;
             return (
-                <Box id="saleCatalog" sx={{display: "flex", flexWrap:"wrap", justifyContent:"space-between", ':after':{content: '""', flex: "auto"}}}>
-                    {salesList}
-                </Box>
+                <Container>
+                    <Box sx={{textAlign: "center", margin: "36px 0 18px 0"}}>
+                        <Typography variant="h3"><b>Sales</b></Typography>
+                        <Typography variant="h6" sx={{margin: "12px 0"}}>Check out our latest products, and buy them for a fix price!</Typography>
+                    </Box>
+                    <Divider />
+                    <Box id="saleCatalog" sx={{display: "flex", flexWrap:"wrap", justifyContent:"space-between", margin: "18px 0"}}>
+                        {salesList}
+                    </Box>
+                </Container>
             );
         };
         return (

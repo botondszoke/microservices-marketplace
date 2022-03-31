@@ -11,6 +11,7 @@ namespace ProductService.DAL.Repositories
         public Task<IReadOnlyCollection<DTOs.ProductGroup>> GetAllProductGroups();
         public Task<DTOs.ProductGroup> GetProductGroupOrNull(string id);
         public Task<IReadOnlyCollection<DTOs.ProductGroup>> GetProductGroupsByOwnerId(string ownerId);
+        public Task<IReadOnlyCollection<DTOs.ProductGroup>> GetUnavailableProductGroups();
         public Task<DTOs.ProductGroup> CreateProductGroup(DTOs.ProductGroup productGroup);
         public Task<bool> DeleteProductGroup(string id);
         public Task<bool> UpdateProductGroup(string id, DTOs.ProductGroup productGroup);

@@ -42,7 +42,7 @@ class SaleTile extends React.Component {
                 </CardContent>
                 <CardActions id="productTileButtons" sx={{ justifyContent: "flex-end", padding: "8px 16px" }}>
                     <Tooltip title="Details and purchase">
-                        <Link to={"/sale/" + this.state.sale.id}>
+                        <Link to={"/sales/" + this.state.sale.id}>
                             <Button size="small" variant="outlined" color="basic">
                                 <ShoppingCartSharpIcon fontSize="medium" />
                             </Button>

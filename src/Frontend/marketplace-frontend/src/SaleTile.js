@@ -33,11 +33,10 @@ class SaleTile extends React.Component {
                     {this.state.sale.productGroup.sampleProduct.name}
                     </Typography>
                     <Typography gutterBottom variant="subtitle1" component="div">
-                    {this.state.sale.unitPrice + " " + this.state.sale.currency + "/pcs"}
+                    {this.state.sale.unitPrice + " " + this.state.sale.currency}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                    Condition:
-                    {this.state.sale.productGroup.sampleProduct.condition === null ? " Unknown" : " " + this.state.sale.productGroup.sampleProduct.condition}
+                    {this.state.sale.productGroup.quantity + " available"}
                     </Typography>
                 </CardContent>
                 <CardActions id="productTileButtons" sx={{ justifyContent: "flex-end", padding: "8px 16px" }}>

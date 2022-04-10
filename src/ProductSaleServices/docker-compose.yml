@@ -3,25 +3,51 @@ version: '3.4'
 services:
   productservice.api:
     image: ${DOCKER_REGISTRY-}productserviceapi
+    container_name: ProductService.API
+    networks:
+      - web
+      - backend
     build:
       context: .
       dockerfile: ProductService.API/Dockerfile
 
   mongodb_container_product:
-    image: mongo:latest
+    image: mongo:5.0
     container_name: product-db
+    networks:
+      - backend
     ports:
       - 27017:27017
 
   saleservice.api:
     image: ${DOCKER_REGISTRY-}saleserviceapi
+    container_name: SaleService.API
+    networks:
+      - web
+      - backend
     build:
       context: .
       dockerfile: SaleService.API/Dockerfile
   
   mongodb_container_sale:
-    image: mongo:latest
+    image: mongo:5.0
     container_name: sale-db
+    networks:
+      - backend
     ports: 
       - 27018:27017
+  
+  traefik_gatevay:
+    image: traefik:v2.6
+    container_name: traefik_gateway
+    networks:
+      - web
+
+networks:
+  web:
+    external: false
+    name: web
+  backend:
+    external: false
+    name: backend
 

@@ -19,10 +19,11 @@ class MyProducts extends React.Component {
     async getProducts() {
         const products = await ApiManager.getProductsByOwnerId(this.state.ownerID);
         const groups = await ApiManager.getProductGroupsByOwnerId(this.state.ownerID);
+        const sales = await ApiManager.getAllSales();
         for (let i = 0; i < products.length; i++) {
             if (products[i].isAvailable)
                 products[i].isAvailable = "Available"
-            else
+            else 
                 products[i].isAvailable = "On sale"
             this.setState({
                 products: this.state.products.concat(products[i])});
@@ -33,6 +34,8 @@ class MyProducts extends React.Component {
                 description: g.sampleProduct.description,
                 condition: g.sampleProduct.condition,
                 isAvailable: g.sampleProduct.isAvailable ? "Available" : "On sale",
+                unitPrice: sales.find(s => s.productGroup.id === g.id).unitPrice,
+                currency: sales.find(s => s.productGroup.id === g.id).currency,
                 id: "g_" + g.sampleProduct.groupID,
             }})
         })

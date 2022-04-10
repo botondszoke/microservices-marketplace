@@ -5,17 +5,46 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=Certific4t
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/root/.aspnet/https/ProductService.pfx
     ports:
       - "5000:80"
       - "5001:443"
     volumes:
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.productservice.rule=Host(`localhost`) && PathPrefix(`/api/product`) || Host(`localhost`) && PathPrefix(`/api/productgroup`) || Host(`product.localhost`) && PathPrefix(`/swagger`)"
+      - "traefik.http.routers.productservice.entrypoints=web"
   saleservice.api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=Certific4t
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/root/.aspnet/https/SaleService.pfx
     ports:
-      - "6000:80"
-      - "6001:443"
+      - "5100:80"
+      - "5101:443"
     volumes:
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.saleservice.rule=Host(`localhost`) && PathPrefix(`/api/sale`) || Host(`sale.localhost`) && PathPrefix(`/swagger`)"
+      - "traefik.http.routers.saleservice.entrypoints=web"
+  traefik_gatevay:
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=web"
+      - "--entrypoints.web.address=:80"
+    labels:
+      - "traefik.http.routers.api.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.api.service=api@internal"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+

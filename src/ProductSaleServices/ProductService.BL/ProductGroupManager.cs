@@ -26,6 +26,12 @@ namespace ProductService.BL
         public async Task<ProductGroup> GetProductGroupOrNull(string id)
             => await _productGroupRepository.GetProductGroupOrNull(id);
 
+        public async Task<IReadOnlyCollection<ProductGroup>> GetProductGroupsByOwnerId(string ownerId)
+            => await _productGroupRepository.GetProductGroupsByOwnerId(ownerId);
+
+        public async Task<IReadOnlyCollection<ProductGroup>> GetUnavailableProductGroups()
+            => await _productGroupRepository.GetUnavailableProductGroups();
+
         public async Task<ProductGroup> CreateProductGroup(ProductGroup productGroup)
         {
 

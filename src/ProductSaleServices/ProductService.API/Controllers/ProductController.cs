@@ -13,10 +13,15 @@ namespace ProductService.API.Controllers
 
         public ProductController(ProductManager pm) => this.pm = pm;
 
+        [Route("queries")]
         [HttpGet]
         public async Task<IEnumerable<Product>> Get() => await pm.GetAllProducts();
 
-        [HttpGet("{productId}")]
+        [Route("queries/ownerId/{ownerId}")]
+        [HttpGet]
+        public async Task<IEnumerable<Product>> GetProductsByOwnerId(string ownerId) => await pm.GetProductsByOwnerId(ownerId);
+
+        [HttpGet("queries/id/{productId}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         public async Task<ActionResult<Product>> Get(string productId)
@@ -27,7 +32,7 @@ namespace ProductService.API.Controllers
             return Ok(product);
         }
 
-        [HttpDelete("{productId}")]
+        [HttpDelete("actions/delete/{productId}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Delete(string productId)
@@ -41,7 +46,7 @@ namespace ProductService.API.Controllers
             return NoContent();
         }
 
-        [HttpPost]
+        [HttpPost("actions/create")]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         public async Task<IActionResult> Create([FromBody] Product product)
@@ -52,7 +57,7 @@ namespace ProductService.API.Controllers
             return BadRequest();
         }
 
-        [HttpPut("{productId}")]
+        [HttpPut("actions/update/{productId}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
@@ -69,5 +74,39 @@ namespace ProductService.API.Controllers
                 return BadRequest();
             return Ok(newProduct);
         }
+
+        [HttpPut("actions/sell/{productId}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> Sell(string productId, [FromBody] Product newProduct)
+        {
+            if (productId != newProduct.ID)
+                return BadRequest();
+            var product = await pm.GetProductOrNull(productId);
+            if (product == null)
+                return NotFound();
+
+            var result = await pm.SoldProduct(product, newProduct.OwnerID);
+            if (!result)
+                return BadRequest();
+            return Ok(newProduct);
+        }
+
+        [HttpPut("actions/sellByGroupId/{groupId}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> SellByGroupId(string groupId, [FromBody] Product newProduct)
+        {
+            var result = await pm.SoldProductFromGroup(groupId, newProduct.OwnerID);
+            if (result == null)
+                return BadRequest();
+            if (result.ID == string.Empty)
+                return NotFound();
+            return Ok(result);
+        }
+
+
     }
 }

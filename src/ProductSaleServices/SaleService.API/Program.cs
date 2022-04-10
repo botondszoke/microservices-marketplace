@@ -10,9 +10,14 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(
         builder => {
-            builder.WithOrigins("http://localhost:6001")
+            builder.WithOrigins("http://localhost:3000")
             .AllowAnyHeader()
             .AllowAnyMethod();
+    });
+    options.AddDefaultPolicy(
+        builder =>
+        {
+            builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
         });
 });
 
@@ -48,7 +53,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection(); // Removed because current configuration of Traefik gw doesn't support https
+
+app.UseCors();
 
 app.UseAuthorization();
 

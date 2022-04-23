@@ -45,7 +45,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection(); // Removed because current configuration of Traefik gw doesn't support https
 
 app.UseCors();
 

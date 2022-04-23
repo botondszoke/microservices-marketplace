@@ -10,6 +10,8 @@ services:
     build:
       context: .
       dockerfile: ProductService.API/Dockerfile
+    depends_on:
+      - mongodb_container_product
 
   mongodb_container_product:
     image: mongo:5.0
@@ -28,6 +30,8 @@ services:
     build:
       context: .
       dockerfile: SaleService.API/Dockerfile
+    depends_on:
+      - mongodb_container_sale
   
   mongodb_container_sale:
     image: mongo:5.0

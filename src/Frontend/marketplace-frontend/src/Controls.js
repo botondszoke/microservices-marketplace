@@ -2,6 +2,7 @@ import React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
@@ -9,11 +10,12 @@ import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { useKeycloak } from '@react-keycloak/web';
 import {useNavigate} from 'react-router-dom';
 
 function Controls() {
-    //Hook
     const [anchorElUser, setAnchorElUser] = React.useState(null);
+    const { keycloak, initialized } = useKeycloak();
 
     const handleOpenUserMenu = (event) => {
       setAnchorElUser(event.currentTarget);
@@ -23,7 +25,7 @@ function Controls() {
       setAnchorElUser(null);
     };
 
-    const settings = ["Profile", "My products", "Add new product"];
+    const settings = ["Profile", "My products", "Upload new product", "Log out"];
     const links = ["/", "/myproducts", "/upload"]
 
     let navigate = useNavigate(); 
@@ -44,12 +46,18 @@ function Controls() {
                 </Box>
 
                 <Box sx={{ flexGrow: 0 }}>
-                    <Tooltip title="Open settings">
-                    <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                        <Avatar alt="Default avatar" src="images/avatar_default.jpg" />
-                    </IconButton>
-                    </Tooltip>
-                    <Menu
+                    {!keycloak.authenticated && initialized && (
+                      <Button sx={{margin: "0px 7px 7px 0px", display:"inline-block", textTransform: "none", fontSize: "16px"}} color="basic" variant="contained" onClick={() => keycloak.login()}>Login</Button>
+                    )}
+                    {keycloak.authenticated && initialized && (
+                      <Tooltip title="Open settings">
+                        <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                            <Avatar alt= {keycloak.tokenParsed.preferred_username} src="images/avatar_default.jpg" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {keycloak.authenticated && initialized && (
+                      <Menu
                       sx={{ mt: '45px' }}
                       id="menu-appbar"
                       anchorEl={anchorElUser}
@@ -65,12 +73,13 @@ function Controls() {
                       open={Boolean(anchorElUser)}
                       onClose={handleCloseUserMenu}
                     >
-                    {settings.map((setting) => (
-                        <MenuItem key={setting} onClick={() => {routeChange(links[settings.indexOf(setting)]); handleCloseUserMenu(); }}>
-                        <Typography textAlign="center">{setting}</Typography>
+                    {settings.map((option) => (
+                        <MenuItem key={option} onClick={() => {option !== "Log out" ? routeChange(links[settings.indexOf(option)]) : keycloak.logout();  handleCloseUserMenu(); }}>
+                        <Typography textAlign="center">{option}</Typography>
                         </MenuItem>
                     ))}
                     </Menu>
+                    )}
                 </Box>
               </Toolbar>
             </Container>

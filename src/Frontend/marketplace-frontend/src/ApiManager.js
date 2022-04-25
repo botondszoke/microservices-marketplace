@@ -3,11 +3,11 @@ import Axios from 'axios';
 import { Api } from '@mui/icons-material';
 
 const productApi = Axios.create({
-    baseURL: 'https://localhost:5001/api'
+    baseURL: 'https://localhost/api'
 });
 
 const saleApi = Axios.create({
-    baseURL: 'https://localhost:6001/api'
+    baseURL: 'https://localhost/api'
 });
 
 class ApiManager extends React.Component {

@@ -41,7 +41,7 @@ services:
     ports: 
       - 27018:27017
   
-  traefik_gateway:
+  traefik-gateway:
     image: traefik:v2.6
     container_name: traefik-gateway
     networks:
@@ -53,25 +53,25 @@ services:
     environment:
       - CLIENT_ID=buyte-backend #<your keycloak client name>
       - CLIENT_SECRET=SSEGEb4is6W5hGlJvpDDKpTZtriVbIEA #<your keycloak client secret>
-      - PROVIDER_URI=http://keycloak/auth/realms/buyte #OIDC_ISSUER=http://keycloak.localhost/auth/realms/buyte
-      - SECRET=secretSECRET # <a random string to secure your cookie>
+      - PROVIDER_URI=http://keycloak.localhost:8080/auth/realms/buyte #OIDC_ISSUER=http://keycloak.localhost/auth/realms/buyte
+      - SECRET=secretSECRET
       - INSECURE_COOKIE=true
       - LOG_LEVEL=debug
-      #- AUTH_HOST=<the FQDN to use for your auth host>
-      #- COOKIE_DOMAIN=<the root FQDN of your domain>
+      - AUTH_HOST=auth.localhost
+      - COOKIE_DOMAIN=localhost 
     labels:
       - "traefik.enable=true"
-      - "traefik.port=4181"
-      - "traefik.backend=traefik-forward-auth"
-      - "traefik.frontend.rule=Host:auth.yourdomain.com"
-      ##- "traefik.docker.network=web"
+      - "traefik.docker.network=web"
+      - "traefik.http.services.forwardauth.loadbalancer.server.port=4181"
+      - "traefik.http.routers.forwardauth.entrypoints=web"
+      
       #- "traefik.http.services.traefik-forward-auth.loadbalancer.server.port=80" #4181
       #- "traefik.http.services.traefik-forward-auth.loadbalancer.passhostheader=false"
       ##- "traefik.http.routers.forwardauth.entrypoints=web"
-      #- "traefik.http.routers.traefik-forward-auth.rule=Host(`auth.localhost`)"
-      ##- "traefik.http.routers.forwardauth.middlewares=traefik-forward-auth"
+      - "traefik.http.routers.forwardauth.rule=Host(`auth.localhost`) && Path(`/_oauth`)"
+      - "traefik.http.routers.forwardauth.middlewares=traefik-forward-auth"
       
-      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://auth.localhost/auth"
+      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181"
       - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User"
       - "traefik.http.middlewares.traefik-forward-auth.forwardauth.trustForwardHeader=true"
     networks:
@@ -82,10 +82,14 @@ services:
     image: traefik/whoami
     container_name: whoami
     labels:
-      - "traefik.http.routers.whoami.rule=Host(`whoami.docker.localhost`)"
-      - "traefik.http.routers.traefik-forward-auth.middlewares=traefik-forward-auth"
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.entrypoints=web"
+      - "traefik.http.routers.whoami.rule=Host(`whoami.localhost`)"
+      - "traefik.http.routers.whoami.middlewares=traefik-forward-auth"
+    networks:
+      - web
 
-  keycloak:
+  keycloak.localhost:
     image: jboss/keycloak:16.1.1
     container_name: keycloak
     ports:
@@ -98,10 +102,18 @@ services:
       - DB_DATABASE=postgres
       - DB_USER=postgres
       - DB_PASSWORD=P05tgre5pw
+      - PROXY_ADDRESS_FORWARDING=true
+      - KEYCLOAK_HOSTNAME=keycloak.localhost
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.keycloak.rule=Host(`keycloak.localhost`)"
       - "traefik.http.routers.keycloak.entrypoints=web"
+      - "traefik.http.routers.keycloak_auth.rule=Host(`keycloak.localhost`)"
+      - "traefik.http.routers.keycloak_auth.entrypoints=traefik"
+      #- "traefik.http.routers.keycloak.entrypoints=traefik"
+      #- "traefik.http.routers.keycloak.middlewares=test-redirectregex"
+      #- "traefik.http.middlewares.test-redirectregex.redirectregex.regex=^http://keycloak:8080/(.*)"
+      #- "traefik.http.middlewares.test-redirectregex.redirectregex.replacement=http://keycloak.localhost/$${1}"
     networks:
       - web
       - backend

@@ -31,16 +31,20 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.saleservice.rule=Host(`localhost`) && PathPrefix(`/api/sale`) || Host(`sale.localhost`) && PathPrefix(`/swagger`)"
       - "traefik.http.routers.saleservice.entrypoints=web"
-  traefik_gateway:
+  traefik-gateway:
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=web"
       - "--entrypoints.web.address=:80"
+      - "--entrypoints.traefik.http.redirections.entryPoint.to=web"
+      - "--entrypoints.traefik.http.redirections.entryPoint.scheme=http"
+      - "--entrypoints.traefik.address=:8080"
+      #- "--entrypoints.auth.address=:8080"
     labels:
       - "traefik.http.routers.api.rule=Host(`traefik.localhost`)"
-      - "traefik.http.routers.api.service=api@internal"
+      #- "traefik.http.routers.api.service=api@internal"
       #- "traefik.http.routers.traefik-forward-auth.middlewares=traefik-forward-auth"
     ports:
       - "80:80"

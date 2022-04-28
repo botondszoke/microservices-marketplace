@@ -16,6 +16,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.productservice.rule=Host(`localhost`) && PathPrefix(`/api/product`) || Host(`localhost`) && PathPrefix(`/api/productgroup`) || Host(`product.localhost`) && PathPrefix(`/swagger`)"
       - "traefik.http.routers.productservice.entrypoints=web"
+  
   saleservice.api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -31,6 +32,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.saleservice.rule=Host(`localhost`) && PathPrefix(`/api/sale`) || Host(`sale.localhost`) && PathPrefix(`/swagger`)"
       - "traefik.http.routers.saleservice.entrypoints=web"
+  
   traefik-gateway:
     command:
       - "--api.insecure=true"
@@ -38,14 +40,9 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=web"
       - "--entrypoints.web.address=:80"
-      - "--entrypoints.traefik.http.redirections.entryPoint.to=web"
-      - "--entrypoints.traefik.http.redirections.entryPoint.scheme=http"
-      - "--entrypoints.traefik.address=:8080"
-      #- "--entrypoints.auth.address=:8080"
     labels:
       - "traefik.http.routers.api.rule=Host(`traefik.localhost`)"
-      #- "traefik.http.routers.api.service=api@internal"
-      #- "traefik.http.routers.traefik-forward-auth.middlewares=traefik-forward-auth"
+      - "traefik.http.routers.api.service=api@internal"
     ports:
       - "80:80"
       - "8080:8080"

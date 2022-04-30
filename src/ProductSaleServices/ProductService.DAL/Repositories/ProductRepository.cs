@@ -36,7 +36,7 @@ namespace ProductService.DAL.Repositories
             return new Product
             {
                 ID = product.ID == string.Empty ? ObjectId.Empty : ObjectId.Parse(product.ID),
-                OwnerID = ObjectId.Parse(product.OwnerID),
+                OwnerID = product.OwnerID,
                 GroupID = product.GroupID == null ? null : ObjectId.Parse(product.GroupID),
                 Name = product.Name,
                 Condition = product.Condition,

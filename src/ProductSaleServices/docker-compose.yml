@@ -67,7 +67,7 @@ services:
       - "traefik.http.routers.forwardauth.middlewares=traefik-forward-auth"
       
       - "traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181"
-      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User, X-Auth-User, X-Secret, Authorization"
+      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User, Access-Control-Allow-Origin"
       - "traefik.http.middlewares.traefik-forward-auth.forwardauth.trustForwardHeader=true"
     networks:
       - web
@@ -98,8 +98,6 @@ services:
       - DB_USER=postgres
       - DB_PASSWORD=P05tgre5pw
       - PROXY_ADDRESS_FORWARDING=true
-      - KEYCLOAK_HTTP_PORT=80
-      - KEYCLOAK_LOGLEVEL=ALL
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.keycloak.rule=Host(`keycloak.localhost`)"

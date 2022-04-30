@@ -7,13 +7,26 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(
+    /*options.AddDefaultPolicy(
         builder => {
-            builder.WithOrigins("http://localhost:3000")
+            builder.WithOrigins("http://localhost")
             .AllowAnyHeader()
             .AllowAnyMethod();
         });
+    options.AddDefaultPolicy(
+        builder => {
+            builder.WithOrigins("http://keycloak.localhost")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+        });*/
+    options.AddDefaultPolicy(
+        builder =>
+        {
+            builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        });
 });
+
+
 
 // Add services to the container.
 builder.Services.Configure<ProductDatabaseSettings>(

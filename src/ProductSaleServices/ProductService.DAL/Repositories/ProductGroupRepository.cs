@@ -32,7 +32,7 @@ namespace ProductService.DAL.Repositories
             return new ProductGroup
             {
                 ID = productGroup.ID == string.Empty ? ObjectId.Empty : ObjectId.Parse(productGroup.ID),
-                OwnerID = ObjectId.Parse(productGroup.OwnerID),
+                OwnerID = productGroup.OwnerID,
                 SampleProduct = ProductConverter.ConvertToDb(productGroup.SampleProduct),
                 //ProductIDs = productGroup.ProductIDs.Select(p => ObjectId.Parse(p.ToString())).ToArray(), 
                 Quantity = productGroup.Quantity

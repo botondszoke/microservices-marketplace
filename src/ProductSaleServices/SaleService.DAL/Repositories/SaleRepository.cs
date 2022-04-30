@@ -31,7 +31,7 @@ namespace SaleService.DAL.Repositories
             return new Sale
             {
                 ID = sale.ID == string.Empty ? ObjectId.Empty : ObjectId.Parse(sale.ID),
-                OwnerID = ObjectId.Parse(sale.OwnerID),
+                OwnerID = sale.OwnerID,
                 ProductGroupID = ObjectId.Parse(sale.ProductGroupID),
                 UnitPrice = sale.UnitPrice,
                 Currency = sale.Currency.ToString()

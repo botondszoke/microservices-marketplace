@@ -52,7 +52,7 @@ class SaleList extends React.Component {
                     />
                 );
             }
-            const salesList = sales.length === 0 ? null : sales;
+            const salesList = sales.length === 0 ? emptyMessage : sales;
             return (
                 <Container>
                     <Box sx={{textAlign: "center", margin: "36px 0 18px 0"}}>

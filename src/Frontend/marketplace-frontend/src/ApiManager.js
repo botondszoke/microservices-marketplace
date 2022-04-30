@@ -3,18 +3,18 @@ import Axios from 'axios';
 import { Api } from '@mui/icons-material';
 
 const productApi = Axios.create({
-    baseURL: 'https://localhost/api'
+    baseURL: 'http://localhost/api'
 });
 
 const saleApi = Axios.create({
-    baseURL: 'https://localhost/api'
+    baseURL: 'http://localhost/api'
 });
 
 class ApiManager extends React.Component {
 
     static async getAllProducts() {
       const data = [];
-      await productApi.get('/Product/queries').then((response) => {
+      await productApi.get('/product/queries/all').then((response) => {
         console.log(response);
         for (let i = 0; i < response.data.length; i++) {
           data.push(response.data[i]);
@@ -25,7 +25,7 @@ class ApiManager extends React.Component {
 
     static async getProductsByOwnerId(ownerId) {
       const data = [];
-      await productApi.get('/Product/queries/ownerId/' + ownerId).then((response) => {
+      await productApi.get('/product/queries/user/').then((response) => {
         console.log(response);
         for (let i = 0; i < response.data.length; i++) {
           data.push(response.data[i]);
@@ -36,7 +36,7 @@ class ApiManager extends React.Component {
 
     static async getAllProductGroups() {
       const data = [];
-      await productApi.get('/ProductGroup/queries').then((response) => {
+      await productApi.get('/productgroup/queries/all').then((response) => {
         console.log(response);
         for (let i = 0; i < response.data.length; i++) {
           data.push(response.data[i]);
@@ -47,7 +47,7 @@ class ApiManager extends React.Component {
 
     static async getProductGroup(id) {
       let productGroup;
-      await productApi.get('/ProductGroup/queries/id/' + id).then((response) => {
+      await productApi.get('/productgroup/queries/' + id).then((response) => {
         console.log(response);
         productGroup = response.data;
       })
@@ -56,7 +56,7 @@ class ApiManager extends React.Component {
 
     static async getProductGroupsByOwnerId(ownerId) {
       const data = [];
-      await productApi.get('/ProductGroup/queries/ownerId/' + ownerId).then((response) => {
+      await productApi.get('/productgroup/queries/user/' + ownerId).then((response) => {
         console.log(response);
         for (let i = 0; i < response.data.length; i++)
           data.push(response.data[i]);
@@ -67,7 +67,7 @@ class ApiManager extends React.Component {
     static async getAllSales() {
       const productGroups = await this.getAllProductGroups();
       const data = [];
-      await saleApi.get('/Sale').then((response) => {
+      await saleApi.get('/sale/queries/all').then((response) => {
         console.log(response);
         for (let i = 0; i < response.data.length; i++) {
           data.push(response.data[i]);
@@ -87,7 +87,7 @@ class ApiManager extends React.Component {
 
     static async getSale(id) {
       let sale;
-      await saleApi.get('/Sale/' + id).then((response) => {
+      await saleApi.get('/sale/queries' + id).then((response) => {
         console.log(response);
         sale = response.data;
       })
@@ -104,7 +104,7 @@ class ApiManager extends React.Component {
       productGroup.sampleProduct.ownerID = newOwnerId;
       console.log(productGroup);
       var sellResponse;
-      await productApi.put('/Product/actions/sellByGroupId/' + productGroup.id, productGroup.sampleProduct).then((response) => {
+      await productApi.put('/product/actions/sellByGroupId/' + productGroup.id, productGroup.sampleProduct).then((response) => {
         console.log(response);
         sellResponse = response;
       });

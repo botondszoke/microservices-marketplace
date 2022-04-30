@@ -23,6 +23,9 @@ namespace SaleService.BL
         public async Task<Sale> GetSaleOrNull(string id)
             => await _saleRepository.GetSaleOrNull(id);
 
+        public async Task<IReadOnlyCollection<Sale>> GetOwnerSales(string ownerId)
+            => await _saleRepository.GetSalesByOwnerId(ownerId);
+
         public async Task<string> CreateSale(Sale sale)
         {
             if (sale.OwnerID == null || sale.ProductGroupID == null || sale.UnitPrice <= 0)

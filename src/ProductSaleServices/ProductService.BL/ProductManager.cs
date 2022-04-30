@@ -217,7 +217,7 @@ namespace ProductService.BL
                 TransactionScopeAsyncFlowOption.Enabled))
             {
                 IReadOnlyCollection<Product> products = await _productRepository.GetProductsByGroupId(groupId);
-                if (products.Count <= 0)
+                if (products.Count <= 0 || products.First().GroupID == newOwnerId)
                     return new Product() { ID = string.Empty};
 
                 var productId = products.First().ID;

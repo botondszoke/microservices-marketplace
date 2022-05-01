@@ -14,7 +14,7 @@ services:
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.productservice.rule=Host(`localhost`) && PathPrefix(`/api/product`) || Host(`localhost`) && PathPrefix(`/api/productgroup`) || Host(`product.localhost`)"
+      - "traefik.http.routers.productservice.rule=Host(`localhost`) && PathPrefix(`/api/product`) || Host(`localhost`) && PathPrefix(`/api/productgroup`) || Host(`localhost`) && PathPrefix(`/_oauth`) || Host(`product.localhost`)"
       - "traefik.http.routers.productservice.entrypoints=web"
       - "traefik.http.routers.productservice.middlewares=traefik-forward-auth"
   
@@ -31,7 +31,7 @@ services:
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.saleservice.rule=Host(`localhost`) && PathPrefix(`/api/sale`) || Host(`localhost`) && PathPrefix(`/_oauth`) || Host(`sale.localhost`)"
+      - "traefik.http.routers.saleservice.rule=Host(`localhost`) && PathPrefix(`/api/sale`) || Host(`sale.localhost`)"
       - "traefik.http.routers.saleservice.entrypoints=web"
       - "traefik.http.routers.saleservice.middlewares=traefik-forward-auth"
   
@@ -45,6 +45,8 @@ services:
     labels:
       - "traefik.http.routers.api.rule=Host(`traefik.localhost`)"
       - "traefik.http.routers.api.service=api@internal"
+      - "traefik.http.middlewares.testheader.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,DELETE,POST"
+      - "traefik.http.middlewares.testheader.headers.accesscontrolalloworiginlist=https://localhost:3000,https://example.org"
     ports:
       - "80:80"
       - "8080:8080"

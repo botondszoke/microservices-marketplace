@@ -79,7 +79,7 @@ namespace SaleService.DAL.Repositories
         {
             return await _context
                 .Sales
-                .Find(s => s.OwnerID.Equals(ObjectId.Parse(id)))
+                .Find(s => s.OwnerID.Equals(id))
                 .ConvertSalesFromDb();
         }
 

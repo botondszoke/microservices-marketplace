@@ -87,7 +87,7 @@ namespace ProductService.DAL.Repositories
         {
             return await _context
                 .Products
-                .Find(p => p.OwnerID.Equals(ObjectId.Parse(ownerId)))
+                .Find(p => p.OwnerID.Equals(ownerId))
                 .ConvertProductsFromDb();
         }
 

@@ -1,9 +1,9 @@
 import React from 'react';
 import Axios from 'axios';
-import { Api } from '@mui/icons-material';
 
 const productApi = Axios.create({
-    baseURL: 'http://localhost/api'
+    baseURL: 'http://localhost/api',
+
 });
 
 const saleApi = Axios.create({
@@ -36,7 +36,7 @@ class ApiManager extends React.Component {
 
     static async getAllProductGroups() {
       const data = [];
-      await productApi.get('/productgroup/queries/all').then((response) => {
+      await productApi.get('/productgroup/queries/all', {withCredentials: true}).then((response) => {
         console.log(response);
         for (let i = 0; i < response.data.length; i++) {
           data.push(response.data[i]);
@@ -67,7 +67,7 @@ class ApiManager extends React.Component {
     static async getAllSales() {
       const productGroups = await this.getAllProductGroups();
       const data = [];
-      await saleApi.get('/sale/queries/all').then((response) => {
+      await saleApi.get('/sale/queries/all', {withCredentials: true}).then((response) => {
         console.log(response);
         for (let i = 0; i < response.data.length; i++) {
           data.push(response.data[i]);

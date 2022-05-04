@@ -69,7 +69,7 @@ namespace ProductService.API.Controllers
             if (ownerId.ToString() != group.OwnerID)
                 return Unauthorized();
 
-            var result = await pm.DeleteProductGroup(productGroupId);
+            var result = await pm.DeleteProductGroup(group);
             
             if (!result)
                 return NotFound();

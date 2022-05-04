@@ -16,5 +16,6 @@ namespace ProductService.DAL.DTOs
         public string? Condition { get; set; }
         public bool IsAvailable { get; set; }
         public string[] PictureLinks { get; set; }
+        public string[] EncodedPictures { get; set; }
     }
 }

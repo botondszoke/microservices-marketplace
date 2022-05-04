@@ -1,7 +1,9 @@
+using Azure.Storage.Blobs;
 using Microsoft.Extensions.Options;
 using ProductService.BL;
-using ProductService.DAL;
+using ProductService.DAL.ProductDatabase;
 using ProductService.DAL.Repositories;
+using ProductService.DAL.BlobStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,12 +24,23 @@ builder.Services.AddCors(options =>
 builder.Services.Configure<ProductDatabaseSettings>(
     builder.Configuration.GetSection("ProductDatabaseSettings"));
 
+builder.Services.Configure<BlobStorageSettings>(
+    builder.Configuration.GetSection("AzureBlobStorageSettings"));
+
+/*builder.Services.AddSingleton(
+    x => new BlobServiceClient(builder.Configuration.GetValue<string>("AzureBlobStorageConnectionString")));*/
 
 builder.Services.AddSingleton<IProductDatabaseSettings>(
     s => s.GetRequiredService<IOptions<ProductDatabaseSettings>>().Value);
 
+builder.Services.AddSingleton<IBlobStorageSettings>(
+    s => s.GetRequiredService<IOptions<BlobStorageSettings>>().Value);
+
 builder.Services.AddSingleton<ProductDatabaseSettings>();
+builder.Services.AddSingleton<BlobStorageSettings>();
 builder.Services.AddSingleton<IProductContext, ProductContext>();
+builder.Services.AddSingleton<IBlobContext, BlobContext>();
+builder.Services.AddScoped<IBlobRepository, BlobRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductGroupRepository, ProductGroupRepository>();
 

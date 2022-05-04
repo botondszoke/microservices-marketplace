@@ -1,6 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
-using ProductService.DAL.DTOs;
+using ProductService.DAL.ProductDatabase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,16 +15,17 @@ namespace ProductService.DAL.Repositories
         {
             if (product == null)
                 return null;
-            return new DTOs.Product 
-            { 
-                ID = product.ID.ToString(), 
+            return new DTOs.Product
+            {
+                ID = product.ID.ToString(),
                 OwnerID = product.OwnerID.ToString(),
                 GroupID = product.GroupID?.ToString(),
-                Name = product.Name, 
-                Condition = product.Condition, 
-                Description = product.Description, 
-                IsAvailable = product.IsAvailable, 
-                PictureLinks = product.PictureLinks 
+                Name = product.Name,
+                Condition = product.Condition,
+                Description = product.Description,
+                IsAvailable = product.IsAvailable,
+                PictureLinks = product.PictureLinks,
+                EncodedPictures = new string[] {}
             };
 
         }

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Converters;
 using SaleService.BL;
-using SaleService.DAL;
+using SaleService.DAL.SaleDatabase;
 using SaleService.DAL.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);

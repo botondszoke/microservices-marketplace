@@ -13,11 +13,13 @@ namespace ProductService.BL
     {
         private readonly IProductRepository _productRepository;
         private readonly IProductGroupRepository _productGroupRepository;
+        private readonly IBlobRepository _blobRepository;
 
-        public ProductGroupManager(IProductRepository productRepository, IProductGroupRepository productGroupRepository)
+        public ProductGroupManager(IProductRepository productRepository, IProductGroupRepository productGroupRepository, IBlobRepository blobRepository)
         {
             _productRepository = productRepository;
             _productGroupRepository = productGroupRepository;
+            _blobRepository = blobRepository;
         }
 
         public async Task<IReadOnlyCollection<ProductGroup>> GetAllProductGroups()
@@ -43,14 +45,21 @@ namespace ProductService.BL
             return await _productGroupRepository.CreateProductGroup(productGroup);
         }
 
-        public async Task<bool> DeleteProductGroup(string id)
+        public async Task<bool> DeleteProductGroup(ProductGroup group)
         {
             using (var tran = new TransactionScope(
                 TransactionScopeOption.Required,
                 new TransactionOptions() { IsolationLevel = IsolationLevel.RepeatableRead },
                 TransactionScopeAsyncFlowOption.Enabled))
-            {
-                IReadOnlyCollection<Product> products = await _productRepository.GetProductsByGroupId(id);
+            { 
+                for (int i = 0; i < group.SampleProduct.EncodedPictures.Length; i++)
+                {
+                    var deleteResult = await _blobRepository.DeleteBlob(group.SampleProduct.PictureLinks[i]);
+                    if (deleteResult == false)
+                        return false;
+                }
+
+                IReadOnlyCollection<Product> products = await _productRepository.GetProductsByGroupId(group.ID);
 
                 foreach (Product product in products)
                 {
@@ -58,7 +67,7 @@ namespace ProductService.BL
                     if (res == false)
                         return false;
                 }
-                var result = await _productGroupRepository.DeleteProductGroup(id);
+                var result = await _productGroupRepository.DeleteProductGroup(group.ID);
                 if (result == false)
                     return false;
                 tran.Complete();
@@ -97,6 +106,7 @@ namespace ProductService.BL
                             Description = product.Description,  
                             Name = product.Name,
                             PictureLinks = product.PictureLinks,
+                            EncodedPictures = product.EncodedPictures,
                             IsAvailable = newProductGroup.SampleProduct.IsAvailable,
                         };
                         var res = await _productRepository.UpdateProduct(newProduct.ID, newProduct);

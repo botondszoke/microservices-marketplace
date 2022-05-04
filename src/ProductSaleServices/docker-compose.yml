@@ -126,6 +126,15 @@ services:
     networks:
       - backend
 
+  azure-emulator:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: azurite
+    command: "azurite-blob --blobHost 0.0.0.0 --blobPort 10000"
+    ports:
+      - 10000:10000
+    networks:
+      - backend
+
 networks:
   web:
     external: false

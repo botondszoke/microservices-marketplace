@@ -3,11 +3,12 @@ import Axios from 'axios';
 
 const productApi = Axios.create({
     baseURL: 'http://localhost/api',
-
+    withCredentials: true,
 });
 
 const saleApi = Axios.create({
-    baseURL: 'http://localhost/api'
+    baseURL: 'http://localhost/api',
+    withCredentials: true,
 });
 
 class ApiManager extends React.Component {
@@ -36,7 +37,7 @@ class ApiManager extends React.Component {
 
     static async getAllProductGroups() {
       const data = [];
-      await productApi.get('/productgroup/queries/all', {withCredentials: true}).then((response) => {
+      await productApi.get('/productgroup/queries/all').then((response) => {
         console.log(response);
         for (let i = 0; i < response.data.length; i++) {
           data.push(response.data[i]);
@@ -67,7 +68,7 @@ class ApiManager extends React.Component {
     static async getAllSales() {
       const productGroups = await this.getAllProductGroups();
       const data = [];
-      await saleApi.get('/sale/queries/all', {withCredentials: true}).then((response) => {
+      await saleApi.get('/sale/queries/all').then((response) => {
         console.log(response);
         for (let i = 0; i < response.data.length; i++) {
           data.push(response.data[i]);

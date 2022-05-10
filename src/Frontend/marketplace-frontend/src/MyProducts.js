@@ -9,7 +9,6 @@ class MyProducts extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            ownerID: "",
             products: [],
             data: [],
             loaded: false,
@@ -17,16 +16,17 @@ class MyProducts extends React.Component {
     }
 
     async getProducts() {
-        const products = await ApiManager.getProductsByOwnerId(this.state.ownerID);
-        const groups = await ApiManager.getProductGroupsByOwnerId(this.state.ownerID);
-        const sales = await ApiManager.getAllSales();
+        const products = await ApiManager.getProductsByOwnerId();
+        const groups = await ApiManager.getProductGroupsByOwnerId();
+        const sales = await ApiManager.getSalesByUserId();
+        let prodArr = [];
         for (let i = 0; i < products.length; i++) {
             if (products[i].isAvailable)
                 products[i].isAvailable = "Available"
             else 
                 products[i].isAvailable = "On sale"
-            this.setState({
-                products: this.state.products.concat(products[i])});
+            prodArr = prodArr.concat(products[i]);
+            
         }
         this.setState({
             data: groups.map((g) => {return {
@@ -37,7 +37,8 @@ class MyProducts extends React.Component {
                 unitPrice: sales.find(s => s.productGroup.id === g.id).unitPrice,
                 currency: sales.find(s => s.productGroup.id === g.id).currency,
                 id: "g_" + g.sampleProduct.groupID,
-            }})
+            }}),
+            products: prodArr,
         })
         this.setState({
             data: this.state.data.concat(products.filter(p => p.groupID === null)),
@@ -48,11 +49,24 @@ class MyProducts extends React.Component {
     }
 
     async componentDidMount() {
-        //Later getProducts....
+        this.getProducts();
+    }
+
+    async deleteProduct(productID) {
+        //console.log("delete fv: ", productID);
+        let response = await ApiManager.deleteProduct(productID);
+        if (response) {
+            this.setState({
+                products: this.state.products.filter(p => p.id !== productID),
+                data: this.state.data.filter(p => p.id !== productID)
+            });
+        }
+        else {
+            //TODO: NEM SIKERÜLT TÖRÖLNI :)
+        }
     }
 
     render() {
-        console.log(this.state.data);
         const dataColumns = [
             {
                 field: "name",
@@ -74,7 +88,7 @@ class MyProducts extends React.Component {
                 flex: 1
             }, {
                 field: "isAvailable",
-                headerName: "State",
+                headerName: "Status",
                 description: "This property shows whether the product is currently available, or it is on sale",
                 minWidth: 110,
                 flex: 0
@@ -97,26 +111,13 @@ class MyProducts extends React.Component {
             
             const groupColumn = [];
 
-        if(!this.state.loaded)
-            return (<div>
-                <TextField
-                        id="tfOwnerId"
-                        label="OwnerID"
-                        required
-                        value={this.state.ownerID}
-                        onChange={(event) => this.setState({ownerID: event.target.value})}
-                        color="basic"
-                />
-                <Button color="basic" variant="contained" onClick={() => this.getProducts()}>Set</Button>
-                </div>
-            );
-
         return(
             <ProductDataGrid 
                 dataColumns = {dataColumns}
                 groupColumns = {groupColumn}
                 rows = {this.state.data}
                 products = {this.state.products}
+                deleteProduct = {this.deleteProduct.bind(this)}
             />
         );
     }

@@ -24,7 +24,7 @@ namespace ProductService.DAL.BlobStorage
             try
             {
                 // Create the container or handle the exception if it already exists
-                BlobContainerClient container = blobServiceClient.CreateBlobContainer(containerName);
+                BlobContainerClient container = blobServiceClient.CreateBlobContainer(containerName, Azure.Storage.Blobs.Models.PublicAccessType.Blob);
                 Console.WriteLine("Created container {0}", container.Name);
                 return container;
             }

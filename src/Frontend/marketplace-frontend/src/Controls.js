@@ -11,7 +11,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useKeycloak } from '@react-keycloak/web';
-import {useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 function Controls() {
     const [anchorElUser, setAnchorElUser] = React.useState(null);

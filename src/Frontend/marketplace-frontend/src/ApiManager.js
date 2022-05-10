@@ -11,6 +11,8 @@ const saleApi = Axios.create({
     withCredentials: true,
 });
 
+const blobBaseURL = "http://azure.localhost/devstoreaccount1/buyte-images-container/";
+
 class ApiManager extends React.Component {
 
     static async getAllProducts() {
@@ -21,16 +23,26 @@ class ApiManager extends React.Component {
           data.push(response.data[i]);
         }
       })
+      data.forEach((e) => {
+        e.pictureLinks.forEach((el) => {
+          el = blobBaseURL + el;
+        })
+      })
       return data;
     }
 
-    static async getProductsByOwnerId(ownerId) {
+    static async getProductsByOwnerId() {
       const data = [];
       await productApi.get('/product/queries/user/').then((response) => {
         console.log(response);
         for (let i = 0; i < response.data.length; i++) {
           data.push(response.data[i]);
         }
+      })
+      data.forEach((e) => {
+        e.pictureLinks.forEach((el) => {
+          el = blobBaseURL + el;
+        })
       })
       return data;
     }
@@ -43,6 +55,11 @@ class ApiManager extends React.Component {
           data.push(response.data[i]);
         }
       })
+      data.forEach((e) => {
+        e.sampleProduct.pictureLinks.forEach((el) => {
+          el = blobBaseURL + el;
+        })
+      })
       return data;
     }
 
@@ -52,15 +69,23 @@ class ApiManager extends React.Component {
         console.log(response);
         productGroup = response.data;
       })
+      productGroup.sampleProduct.pictureLinks.forEach((e) => {
+        e = blobBaseURL + e;
+      })
       return productGroup;
     }
 
-    static async getProductGroupsByOwnerId(ownerId) {
+    static async getProductGroupsByOwnerId() {
       const data = [];
-      await productApi.get('/productgroup/queries/user/' + ownerId).then((response) => {
+      await productApi.get('/productgroup/queries/user/').then((response) => {
         console.log(response);
         for (let i = 0; i < response.data.length; i++)
           data.push(response.data[i]);
+      })
+      data.forEach((e) => {
+        e.sampleProduct.pictureLinks.forEach((el) => {
+          el = blobBaseURL + el;
+        })
       })
       return data;
     }
@@ -69,6 +94,27 @@ class ApiManager extends React.Component {
       const productGroups = await this.getAllProductGroups();
       const data = [];
       await saleApi.get('/sale/queries/all').then((response) => {
+        console.log(response);
+        for (let i = 0; i < response.data.length; i++) {
+          data.push(response.data[i]);
+        }
+      })
+      const newData = data.map(sale => {
+        return {
+          id: sale.id,
+          ownerID: sale.ownerID,
+          productGroup: productGroups.find(pg => pg.id === sale.productGroupID),
+          unitPrice: sale.unitPrice,
+          currency: sale.currency,
+        }
+      })
+      return newData;
+    }
+
+    static async getSalesByUserId() {
+      const productGroups = await this.getProductGroupsByOwnerId();
+      const data = [];
+      await saleApi.get('/sale/queries/user').then((response) => {
         console.log(response);
         for (let i = 0; i < response.data.length; i++) {
           data.push(response.data[i]);
@@ -104,12 +150,30 @@ class ApiManager extends React.Component {
     static async sellProductFromGroup(productGroup, newOwnerId) {
       productGroup.sampleProduct.ownerID = newOwnerId;
       console.log(productGroup);
-      var sellResponse;
+      let sellResponse;
       await productApi.put('/product/actions/sellByGroupId/' + productGroup.id, productGroup.sampleProduct).then((response) => {
         console.log(response);
         sellResponse = response;
       });
       return sellResponse.data;
+    }
+
+    static async uploadProduct(product) {
+      let uploadResponse;
+      await productApi.post('/product/actions/create/', product, {withCredentials: true}).then((response) => {
+        console.log(response);
+        uploadResponse = response;
+      });
+      return uploadResponse;
+    }
+
+    static async deleteProduct(productID) {
+      let success = false;
+      await productApi.delete('/product/actions/delete/' + productID).then((response) => {
+        console.log(response);
+        success = true;
+      });
+      return success;
     }
 }
 export default ApiManager;

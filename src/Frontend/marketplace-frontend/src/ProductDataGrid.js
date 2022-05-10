@@ -9,7 +9,6 @@ import { DataGridPro,
         useGridApiContext } from '@mui/x-data-grid-pro';
 import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 const useKeepGroupingColumnsHidden = (apiRef, columns, initialModel,leafField
@@ -49,14 +48,13 @@ const useKeepGroupingColumnsHidden = (apiRef, columns, initialModel,leafField
     };
 
 function ProductDataGrid(props) {
-
     const apiRef = useGridApiRef();
     const columns = useKeepGroupingColumnsHidden(apiRef, props.dataColumns.concat(props.groupColumns), props.groupColumns.map(c => c.field));
 
     const getDetailPanelContent = React.useCallback(
-        ({ row }) => <DetailPanelContent row={row} products={props.products}/>,
+        ({ row }) => <DetailPanelContent row={row} products={props.products} delete={props.deleteProduct}/>,
         [],
-      );
+    );
     
     const getDetailPanelHeight = React.useCallback(({row}) => row["id"].startsWith("g_") ? 250 : 60, []);
 
@@ -100,7 +98,7 @@ function ProductDataGrid(props) {
 }
 
 function DetailPanelContent(props) {
-    const apiRef = useGridApiContext();
+    //const apiRef = useGridApiContext();
     if (props.row["id"].startsWith("g_"))
         return(
             <Paper elevation={1} sx={{margin: "18px 32px", overflow: "auto", maxHeight: "calc(250px - 36px)"}}>
@@ -128,7 +126,7 @@ function DetailPanelContent(props) {
     return(
         <Paper elevation={1} sx={{margin: "7px 18px", textAlign: "left"}}>
             <Button size="small" variant="outlined" color="basic" sx={{margin: "8px 9px 8px 32px"}}>Edit</Button>
-            <Button size="small" variant="outlined" color="basic" sx={{margin: "8px 18px 8px 9px"}}>Delete</Button>
+            <Button size="small" variant="outlined" color="basic" sx={{margin: "8px 18px 8px 9px"}} onClick={() => props.delete(props.row["id"])}>Delete</Button>
         </Paper>
     );
 }

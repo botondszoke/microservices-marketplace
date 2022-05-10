@@ -67,7 +67,7 @@ services:
       - "traefik.http.routers.forwardauth.middlewares=traefik-forward-auth"
       
       - "traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181"
-      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User, Access-Control-Allow-Origin"
+      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User"
       - "traefik.http.middlewares.traefik-forward-auth.forwardauth.trustForwardHeader=true"
     networks:
       - web
@@ -100,8 +100,9 @@ services:
       - PROXY_ADDRESS_FORWARDING=true
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.keycloak.rule=Host(`keycloak.localhost`)"
       - "traefik.http.routers.keycloak.entrypoints=web"
+      - "traefik.http.routers.keycloak.rule=Host(`keycloak.localhost`)"
+
     networks:
       backend:
         aliases:
@@ -132,6 +133,10 @@ services:
     command: "azurite-blob --blobHost 0.0.0.0 --blobPort 10000"
     ports:
       - 10000:10000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.azure.rule=Host(`azure.localhost`)"
+      - "traefik.http.routers.azure.entrypoints=web"
     networks:
       - backend
 

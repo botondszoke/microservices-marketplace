@@ -80,6 +80,7 @@ namespace ProductService.BL
             if (oldProductGroup.OwnerID != newProductGroup.OwnerID || oldProductGroup.Quantity != newProductGroup.Quantity)
                 return false;
 
+            // Csak az elérhetőség változhat
             if (oldProductGroup.SampleProduct.ID == newProductGroup.SampleProduct.ID &&
                 oldProductGroup.SampleProduct.GroupID == newProductGroup.SampleProduct.GroupID &&
                 oldProductGroup.SampleProduct.OwnerID == newProductGroup.SampleProduct.OwnerID &&
@@ -97,6 +98,7 @@ namespace ProductService.BL
 
                     foreach (Product product in products)
                     {
+                        // Csak az elérhetőség változhat
                         Product newProduct = new()
                         {
                             ID = product.ID,

@@ -9,6 +9,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { useKeycloak } from '@react-keycloak/web';
 
 
 
@@ -24,8 +25,46 @@ function Upload() {
     const [unitPrice, setUnitPrice] = React.useState("");
     const [currency, setCurrency] = React.useState("");
 
-    const handleSubmit = () => {
+    const {keycloak, initialized} = useKeycloak();
 
+    const encodePicturesAndSend = (from, idx, obj, reader) => {
+        reader.onload = function () {
+            let result = reader.result.split(",");
+            result.shift();
+            obj.encodedPictures = obj.encodedPictures.concat(result.join(""));
+            if (idx !== obj.pictureLinks.length-1) {
+                encodePicturesAndSend(from, idx+1, obj, reader)
+            }
+            else {
+                ApiManager.uploadProduct(obj);
+            }
+        }
+        reader.onerror = function (error) {
+            console.log('Error: ', error);
+        };
+        if (idx >= from.length) {
+            ApiManager.uploadProduct(obj);
+        }
+        else {
+            reader.readAsDataURL(from[idx]);
+        }
+    }
+
+    const handleSubmit = () => {        
+        let files = Array.from(document.getElementById("uploadImages").files);
+        let product = {
+            id: "",
+            ownerID: initialized ? keycloak.tokenParsed.email : "",
+            groupID: null,
+            name: name,
+            description: description === "" ? null : description,
+            condition: condition === "" ? null : condition,
+            isAvailable: true,
+            pictureLinks: pictureNames.split('\n'),
+            encodedPictures: [],
+        };
+
+        encodePicturesAndSend(files, 0, product, new FileReader());
     }
 
     const onSaleActions = [];
@@ -56,7 +95,7 @@ function Upload() {
         <MenuItem value={"HUF"}>HUF</MenuItem>
         <MenuItem value={"EUR"}>EUR</MenuItem>
     </TextField>);
-    
+    //TODO: WARNING: CSAK AZ ELSŐ 5 KÉP LESZ FIGYELEMBE VÉVE!
     return (
         <Container sx={{m: "auto"}}>
             <Box component="div" sx={{textAlign: "center", m: "36px"}}>
@@ -95,16 +134,9 @@ function Upload() {
                         onChange={(event) => setDescription(event.target.value)}
                         color="basic"
                     />
-                    <TextField
-                        id="tfOwnerID"
-                        label="TEMP_FIELD_OwnerID"
-                        variant="filled"
-                        value={ownerID}
-                        onChange={(event) => setOwnerID(event.target.value)}
-                        color="basic"
-                    />
                 </Box>
                 <Box sx={{ width: { xs: "calc(100%-16px)", md:"calc(50% - 16px)"},  padding: "8px"}}>
+                    
                     <TextField
                         id="tfPictureNames"
                         label="Pictures"
@@ -129,7 +161,19 @@ function Upload() {
                             accept="image/*"
                             multiple
                             hidden
-                            onChange={() => setPictureNames(Array.from(document.getElementById("uploadImages").files).map(f => f.name).join("\n"))}
+                            onChange={() => {
+                                let pictureNames = Array.from(document.getElementById("uploadImages").files).map(f => f.name);
+                                if (pictureNames.length <= 5) {
+                                    setPictureNames(pictureNames.join("\n"));
+                                }
+                                else {
+                                    let firstNames = [];
+                                    for (let i = 0; i < 5; i++) {
+                                        firstNames = firstNames.concat(pictureNames[i]);
+                                    }
+                                    setPictureNames(firstNames.join("\n"));
+                                }
+                            }}
                         />
                     </Button>
                 </Box>
@@ -138,9 +182,7 @@ function Upload() {
             <Box>
                 <Box sx={{m:"18px 8px", display:"flex", justifyContent: "space-between"}}>
                     <FormControlLabel control={<Checkbox color="basic" checked={onSale} onChange={() => setOnSale(!onSale)} inputProps={{ 'aria-label': 'controlled' }} label="subid"/>} label = "I would like to place this product on sale now." />
-                    <Button variant="contained"
-                        color="basic"
-                    >
+                    <Button variant="contained" color="basic" onClick={handleSubmit}>
                         Upload product
                     </Button>
                 </Box>

@@ -40,7 +40,7 @@ namespace ProductService.DAL.Repositories
         public async Task<string> CreateBlob(string name, DTOs.Blob blob)
         {
             string[] parts = name.Split('.');
-            name = Guid.NewGuid().ToString() + parts[parts.Length-1];
+            name = Guid.NewGuid().ToString() + '.' + parts[parts.Length-1];
 
             try
             {

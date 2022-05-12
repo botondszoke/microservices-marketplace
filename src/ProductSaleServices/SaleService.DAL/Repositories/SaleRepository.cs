@@ -84,6 +84,15 @@ namespace SaleService.DAL.Repositories
                 .ConvertSalesFromDb();
         }
 
+        public async Task<DTOs.Sale> GetSaleByProductGroupId(string id)
+        {
+            var sale = await _context
+                .Sales
+                .Find(s => s.ProductGroupID.Equals(ObjectId.Parse(id)))
+                .FirstOrDefaultAsync();
+            return SaleConverter.ConvertFromDb(sale);
+        }
+
         public async Task<IReadOnlyCollection<DTOs.Sale>> FindSales(FilterDefinition<Sale> filter)
         {
             return await _context

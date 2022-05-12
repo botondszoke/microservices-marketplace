@@ -50,6 +50,7 @@ namespace ProductService.DAL.Repositories
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return string.Empty;
             }
 

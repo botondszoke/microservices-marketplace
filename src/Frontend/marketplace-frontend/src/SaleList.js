@@ -18,7 +18,6 @@ class SaleList extends React.Component {
     }
 
     async componentDidMount() {
-        //const { keycloak, initialized } = useKeycloak();
         const saleData = await ApiManager.getAllSales();
         for (let i = 0; i < saleData.length; i++) {
             this.AddSale(saleData[i]);

@@ -13,26 +13,37 @@ namespace SaleService.API.Controllers
 
         public SaleController(SaleManager sm) => this.sm = sm;
 
-        [Route("queries/all")]
-        [HttpGet]
-        public async Task<IEnumerable<Sale>> Get() => await sm.GetAllSales();
-
-        [Route("queries/user")]
         [HttpGet]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<IEnumerable<Sale>>> GetUserSales()
+        public async Task<ActionResult<IEnumerable<Sale>>> GetSales([FromQuery] string? filter = "all", [FromQuery] string? productGroupId = "0")
         {
-            // Authentication result in X-Forwarded-User
-            Request.Headers.TryGetValue("X-Forwarded-User", out Microsoft.Extensions.Primitives.StringValues ownerId);
+            if (filter == "user")
+            {
+                // Authentication result in X-Forwarded-User
+                Request.Headers.TryGetValue("X-Forwarded-User", out Microsoft.Extensions.Primitives.StringValues ownerId);
 
-            if (ownerId.ToString() == null)
-                return BadRequest();
-            var sales = await sm.GetOwnerSales(ownerId.ToString());
-            return Ok(sales);
+                if (ownerId.ToString() == null)
+                    return BadRequest();
+                var sales = await sm.GetOwnerSales(ownerId.ToString());
+                return Ok(sales);
+            }
+
+            if (filter == "productGroupId")
+            {
+                // Authentication result in X-Forwarded-User
+                Request.Headers.TryGetValue("X-Forwarded-User", out Microsoft.Extensions.Primitives.StringValues ownerId);
+                if (ownerId.ToString() == null)
+                    return BadRequest();
+                var sale = await sm.GetSaleByProductGroupId(productGroupId);
+                return Ok(sale);
+            }
+
+            var result = await sm.GetAllSales();
+            return Ok(result);
         }
 
-        [HttpGet("queries/{saleId}")]
+        [HttpGet("{saleId}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         public async Task<ActionResult<Sale>> Get(string saleId)
@@ -43,7 +54,7 @@ namespace SaleService.API.Controllers
             return Ok(sale);
         }
 
-        [HttpDelete("actions/delete/{saleId}")]
+        [HttpDelete("{saleId}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
@@ -71,7 +82,7 @@ namespace SaleService.API.Controllers
             return NoContent();
         }
 
-        [HttpPost("actions/create")]
+        [HttpPost()]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
@@ -88,11 +99,11 @@ namespace SaleService.API.Controllers
 
             sale.ID = await sm.CreateSale(sale);
             if (sale.ID != string.Empty)
-                return CreatedAtAction(nameof(Get), new { id = sale.ID }, sale);
+                return CreatedAtAction(nameof(GetSales), new { id = sale.ID }, sale);
             return BadRequest();
         }
 
-        [HttpPut("actions/update/{saleId}")]
+        [HttpPut("{saleId}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]

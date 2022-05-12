@@ -47,22 +47,24 @@ namespace ProductService.BL
 
         public async Task<bool> DeleteProductGroup(ProductGroup group)
         {
+            if (group.SampleProduct.IsAvailable == false)
+                return false;
             using (var tran = new TransactionScope(
                 TransactionScopeOption.Required,
                 new TransactionOptions() { IsolationLevel = IsolationLevel.RepeatableRead },
                 TransactionScopeAsyncFlowOption.Enabled))
             { 
-                for (int i = 0; i < group.SampleProduct.EncodedPictures.Length; i++)
-                {
-                    var deleteResult = await _blobRepository.DeleteBlob(group.SampleProduct.PictureLinks[i]);
-                    if (deleteResult == false)
-                        return false;
-                }
-
+                
                 IReadOnlyCollection<Product> products = await _productRepository.GetProductsByGroupId(group.ID);
 
                 foreach (Product product in products)
                 {
+                    for (int i = 0; i < product.PictureLinks.Length; i++)
+                    {
+                        var deleteResult = await _blobRepository.DeleteBlob(product.PictureLinks[i]);
+                        if (deleteResult == false)
+                            return false;
+                    }
                     var res = await _productRepository.DeleteProduct(product.ID);
                     if (res == false)
                         return false;

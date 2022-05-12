@@ -13,26 +13,27 @@ namespace ProductService.API.Controllers
 
         public ProductController(ProductManager pm) => this.pm = pm;
 
-        [Route("queries/all")]
-        [HttpGet]
-        public async Task<IEnumerable<Product>> Get() => await pm.GetAllProducts();
-
-        [Route("queries/user")]
         [HttpGet]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProductsByOwnerId()
+        public async Task<ActionResult<IEnumerable<Product>>> GetProducts([FromQuery] string? filter = "all")
         {
-            // Authentication result in X-Forwarded-User
-            Request.Headers.TryGetValue("X-Forwarded-User", out Microsoft.Extensions.Primitives.StringValues ownerId);
+            if (filter == "user")
+            {
+                // Authentication result in X-Forwarded-User
+                Request.Headers.TryGetValue("X-Forwarded-User", out Microsoft.Extensions.Primitives.StringValues ownerId);
 
-            if (ownerId.ToString() == null)
-                return BadRequest();
+                if (ownerId.ToString() == null)
+                    return BadRequest();
 
-            var products = await pm.GetProductsByOwnerId(ownerId.ToString());
+                var ownerProducts = await pm.GetProductsByOwnerId(ownerId.ToString());
+                return Ok(ownerProducts);
+            }
+            var products = await pm.GetAllProducts();
             return Ok(products);
+
         }
-        [HttpGet("queries/{productId}")]
+        [HttpGet("{productId}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         public async Task<ActionResult<Product>> Get(string productId)
@@ -43,7 +44,7 @@ namespace ProductService.API.Controllers
             return Ok(product);
         }
 
-        [HttpDelete("actions/delete/{productId}")]
+        [HttpDelete("{productId}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
@@ -70,7 +71,7 @@ namespace ProductService.API.Controllers
             return NoContent();
         }
 
-        [HttpPost("actions/create")]
+        [HttpPost()]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
@@ -87,21 +88,43 @@ namespace ProductService.API.Controllers
 
             product.ID = await pm.CreateProduct(product);
             if (product.ID != string.Empty)
-                return CreatedAtAction(nameof(Get), new { id = product.ID }, product);
+                return CreatedAtAction(nameof(GetProducts), new { id = product.ID }, product);
             return BadRequest();
         }
 
-        [HttpPut("actions/update/{productId}")]
+        [HttpPut("{productId}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Update(string productId, [FromBody] Product newProduct)
+        public async Task<IActionResult> Update(string productId, [FromBody] Product? newProduct = null, [FromQuery] string? action = "update")
         {
             // Authentication result in X-Forwarded-User
             Request.Headers.TryGetValue("X-Forwarded-User", out Microsoft.Extensions.Primitives.StringValues ownerId);
 
-            if (productId != newProduct.ID || ownerId.ToString() == null)
+            if (ownerId.ToString() == null)
+                return BadRequest();
+
+            if (action == "sell")
+            {
+                var sellProduct = await pm.GetProductOrNull(productId);
+
+                if (sellProduct == null)
+                    return NotFound();
+
+                if (sellProduct.OwnerID == ownerId.ToString())
+                    return BadRequest();
+
+                var sellResult = await pm.SoldProduct(sellProduct, ownerId.ToString());
+                if (!sellResult)
+                    return BadRequest();
+
+                sellProduct = await pm.GetProductOrNull(productId);
+
+                return Ok(sellProduct);
+            }
+
+            if (newProduct.ID == null || productId != newProduct.ID)
                 return BadRequest();
 
             var product = await pm.GetProductOrNull(productId);
@@ -118,11 +141,11 @@ namespace ProductService.API.Controllers
             return Ok(newProduct);
         }
 
-        [HttpPut("actions/sell/{productId}")]
+        [HttpPut()]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Sell(string productId)
+        public async Task<IActionResult> SellByGroupId([FromQuery] string groupId, [FromQuery] int quantity)
         {
             // Authentication result in X-Forwarded-User
             Request.Headers.TryGetValue("X-Forwarded-User", out Microsoft.Extensions.Primitives.StringValues ownerId);
@@ -130,43 +153,16 @@ namespace ProductService.API.Controllers
             if (ownerId.ToString() == null)
                 return BadRequest();
 
-            var product = await pm.GetProductOrNull(productId);
-
-            if (product.OwnerID == ownerId.ToString())
+            if (quantity < 0)
                 return BadRequest();
-
-            if (product == null)
-                return NotFound();
-
-            var result = await pm.SoldProduct(product, ownerId.ToString());
-            if (!result)
-                return BadRequest();
-
-            product = await pm.GetProductOrNull(productId);
-
-            return Ok(product);
-        }
-
-        [HttpPut("actions/sellByGroupId/{groupId}")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
-        public async Task<IActionResult> SellByGroupId(string groupId)
-        {
-            // Authentication result in X-Forwarded-User
-            Request.Headers.TryGetValue("X-Forwarded-User", out Microsoft.Extensions.Primitives.StringValues ownerId);
-
-            if (ownerId.ToString() == null)
-                return BadRequest();
-
 
             //TODO: Check if Group owner == ownerID move to here instead of function...
-            var result = await pm.SoldProductFromGroup(groupId, ownerId.ToString());
+            var result = await pm.SoldProductFromGroup(groupId, ownerId.ToString(), quantity);
             
-            if (result == null)
+            if (result.Count != quantity || result.Count == 0)
                 return BadRequest();
             
-            if (result.ID == string.Empty)
+            if (result[0].ID == string.Empty)
                 return NotFound();
 
             return Ok(result);

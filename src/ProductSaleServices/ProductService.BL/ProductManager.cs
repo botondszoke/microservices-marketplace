@@ -68,6 +68,8 @@ namespace ProductService.BL
 
                 }
                 var id = await _productRepository.CreateProduct(product);
+                if (id == string.Empty)
+                    return id;
                 tran.Complete();
                 return id;
             }
@@ -99,6 +101,7 @@ namespace ProductService.BL
                         var result = await _productGroupRepository.RemoveProductFromGroup(oldProduct.GroupID);
                         if (result == false)
                             return false;
+                        newProduct.IsAvailable = true;
                         result = await _productRepository.UpdateProduct(id, newProduct);
                         if (result == false)
                             return false;
@@ -320,7 +323,7 @@ namespace ProductService.BL
             }
         }
 
-        public async Task<Product> SoldProductFromGroup(string groupId, string newOwnerId)
+        public async Task<List<Product>> SoldProductFromGroup(string groupId, string newOwnerId, int quantity)
         {
             using (var tran = new TransactionScope(
                 TransactionScopeOption.Required,
@@ -328,15 +331,23 @@ namespace ProductService.BL
                 TransactionScopeAsyncFlowOption.Enabled))
             {
                 IReadOnlyCollection<Product> products = await _productRepository.GetProductsByGroupId(groupId);
-                if (products.Count <= 0 || products.First().GroupID == newOwnerId)
-                    return new Product() { ID = string.Empty};
+                List<Product> sold = new List<Product>();
+                if (products.Count <= quantity || products.Count <= 0 /*|| products.First().OwnerID == newOwnerId*/)
+                {
+                    sold.Add(new Product() { ID = string.Empty });
+                    return sold;
+                }
 
-                var productId = products.First().ID;
-                var result = await this.SoldProduct(products.First(), newOwnerId);
-                if (result == false)
-                    return null;
+                for (int i = 0; i < quantity; i++)
+                {
+                    var productId = products.ElementAt(i).ID;
+                    var result = await this.SoldProduct(products.ElementAt(i), newOwnerId);
+                    if (result == false)
+                        return new List<Product>();
+                    sold.Add(await _productRepository.GetProductOrNull(productId));
+                }
 
-                return await _productRepository.GetProductOrNull(productId);
+                return sold;
             }
         }
     }

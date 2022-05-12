@@ -26,11 +26,14 @@ function Controls() {
     };
 
     const settings = ["Profile", "My products", "Upload new product", "Log out"];
-    const links = ["/", "/myproducts", "/upload"]
+    const links = ["http://keycloak.localhost/auth/realms/buyte/account/#/", "/myproducts", "/upload"]
 
     let navigate = useNavigate(); 
     const routeChange = (path) =>{ 
-      navigate(path);
+      if(path.startsWith("http://"))
+        window.location = path;
+      else
+        navigate(path);
     }
 
     return (
@@ -41,13 +44,17 @@ function Controls() {
                 <Typography variant="h4" className="navbarTitle">
                   <b><i>BuYTE</i></b>
                 </Typography>
-
+                <Box sx={{flexGrow: 0, m: "0 30px"}}>
+                  <Button sx={{textTransform: "none", fontSize: "16px"}} variant="text" color="white" className="salesLink" onClick={() => {routeChange("/sales")}}>
+                    Sales
+                  </Button>
+                </Box>
                 <Box sx ={{ flexGrow: 1 }}>
                 </Box>
 
                 <Box sx={{ flexGrow: 0 }}>
                     {!keycloak.authenticated && initialized && (
-                      <Button sx={{margin: "0px 7px 7px 0px", display:"inline-block", textTransform: "none", fontSize: "16px"}} color="basic" variant="contained" onClick={() => keycloak.login()}>Login</Button>
+                      <Button sx={{margin: "0px 7px 7px 0px", display:"inline-block", textTransform: "none", fontSize: "16px"}} color="white" variant="text" onClick={() => keycloak.login()}>Login</Button>
                     )}
                     {keycloak.authenticated && initialized && (
                       <Tooltip title="Open settings">

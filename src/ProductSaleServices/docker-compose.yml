@@ -135,10 +135,12 @@ services:
       - 10000:10000
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.azure.rule=Host(`azure.localhost`)"
+      - "traefik.http.routers.azure.rule=Host(`localhost`) && PathPrefix(`/devstoreaccount1`)"
       - "traefik.http.routers.azure.entrypoints=web"
+      - "traefik.http.services.azure.loadbalancer.server.port=10000"
     networks:
       - backend
+      - web
 
 networks:
   web:

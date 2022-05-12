@@ -6,10 +6,14 @@ import { DataGridPro,
         gridColumnVisibilityModelSelector,
         GridEvents,
         useGridApiRef,
-        useGridApiContext } from '@mui/x-data-grid-pro';
+        //useGridApiContext 
+      } from '@mui/x-data-grid-pro';
 import Divider from '@mui/material/Divider';
+import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+
 
 const useKeepGroupingColumnsHidden = (apiRef, columns, initialModel,leafField
     ) => {
@@ -52,7 +56,15 @@ function ProductDataGrid(props) {
     const columns = useKeepGroupingColumnsHidden(apiRef, props.dataColumns.concat(props.groupColumns), props.groupColumns.map(c => c.field));
 
     const getDetailPanelContent = React.useCallback(
-        ({ row }) => <DetailPanelContent row={row} products={props.products} delete={props.deleteProduct}/>,
+        ({ row }) => <DetailPanelContent row={row} 
+                                        products={props.products}
+                                        delete={props.deleteProduct} 
+                                        edit={props.editProduct} 
+                                        newGroup={props.newGroup} 
+                                        deleteGroup={props.deleteGroup}
+                                        removeProductFromGroup={props.removeProductFromGroup}
+                                        addProductToGroup={props.addProductToGroup}
+                                        manageGroup={props.manageGroup}/>,
         [],
     );
     
@@ -98,12 +110,38 @@ function ProductDataGrid(props) {
 }
 
 function DetailPanelContent(props) {
+    console.log(props);
+    const [showProductsForGroup, setShowProductsForGroup] = React.useState(false);
+    const [selectedProduct, setSelectedProduct] = React.useState("");
+    const productSelector = [];
+    productSelector.push(
+        <TextField
+            select
+            id="selProduct"
+            label="Add product"
+            value={selectedProduct}
+            onChange={(event) => {setSelectedProduct(event.target.value); props.addProductToGroup(event.target.value, props.row["id"]);}}
+            sx={{margin: "14px 0 6px 18px", width: "20ch"}}
+            color="basic"
+            size="small"
+        >
+            {props.products.map(p => {
+                if (p.groupID === null && p.isAvailable === "Available" && p.name === props.row["name"] && p.description === props.row["description"]
+                && p.condition === props.row["condition"]) 
+                    return <MenuItem value={p.id}>{p.name} - {p.id}</MenuItem>
+                return null;
+            })}
+        </TextField>
+    );
     //const apiRef = useGridApiContext();
-    if (props.row["id"].startsWith("g_"))
+    if (props.row["id"].startsWith("g_")) {
         return(
             <Paper elevation={1} sx={{margin: "18px 32px", overflow: "auto", maxHeight: "calc(250px - 36px)"}}>
                 <Box sx={{textAlign: "left"}}>
-                    <Button size="small" variant="outlined" color="basic" sx={{margin: "18px 0 9px 18px"}}>Add product</Button>
+                    <Button size="small" variant="outlined" color="basic" sx={{margin: "18px 0 12px 18px"}} onClick={() => props.manageGroup(props.row["id"])}>Manage group</Button>
+                    <Button size="small" variant="outlined" color="basic" sx={{margin: "18px 0 12px 18px"}} onClick={() => props.deleteGroup(props.row["id"])} disabled={props.row["isAvailable"] !== "Available"}>Delete group</Button>
+                    <Button size="small" variant={showProductsForGroup ? "contained" : "outlined"} color="basic" sx={{margin: "18px 0 12px 18px"}} onClick={() => setShowProductsForGroup(!showProductsForGroup)}>Add product</Button>
+                    {showProductsForGroup ? productSelector : null}
                 </Box>
                 <Divider />
                 <Box>
@@ -112,7 +150,7 @@ function DetailPanelContent(props) {
                         <Box sx={{display: "flex"}}>
                             <Typography sx={{margin: "13px 0 13px 20px", display: "inline", fontWeight: "400", fontSize: "0.875rem"}}>{"Item No. " + (idx+1)}</Typography>
                             <Box sx={{flexGrow: 1, display: "inline"}}></Box>
-                            <Button size="small" variant="outlined" color="basic" sx={{margin: "9px 18px 9px 18px"}}>
+                            <Button size="small" variant="outlined" color="basic" sx={{margin: "9px 18px 9px 18px"}} onClick={() => props.removeProductFromGroup(props.row["id"], idx)}>
                                 Remove
                             </Button>
                         </Box>
@@ -122,11 +160,12 @@ function DetailPanelContent(props) {
                 </Box>
             </Paper>
         );
-    
+    }
     return(
         <Paper elevation={1} sx={{margin: "7px 18px", textAlign: "left"}}>
-            <Button size="small" variant="outlined" color="basic" sx={{margin: "8px 9px 8px 32px"}}>Edit</Button>
-            <Button size="small" variant="outlined" color="basic" sx={{margin: "8px 18px 8px 9px"}} onClick={() => props.delete(props.row["id"])}>Delete</Button>
+            <Button size="small" variant="outlined" color="basic" sx={{margin: "8px 9px 8px 32px"}} onClick={() => props.edit(props.row["id"])}>Edit</Button>
+            <Button size="small" variant="outlined" color="basic" sx={{margin: "8px 9px 8px 9px"}} onClick={() => props.delete(props.row["id"])}>Delete</Button>
+            <Button size="small" variant="outlined" color="basic" sx={{margin: "8px 9px 8px 9px"}} onClick={() => props.newGroup(props.products.filter(p=> p.id === props.row["id"])[0])}>Add to new group</Button>
         </Paper>
     );
 }

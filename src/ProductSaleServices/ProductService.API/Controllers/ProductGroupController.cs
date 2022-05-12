@@ -13,31 +13,34 @@ namespace ProductService.API.Controllers
 
         public ProductGroupController(ProductGroupManager pm) => this.pm = pm;
 
-        [Route("queries/all")]
-        [HttpGet]
-        public async Task<IEnumerable<ProductGroup>> Get() => await pm.GetAllProductGroups();
-
-        [Route("queries/unavailable")]
-        [HttpGet]
-        public async Task<IEnumerable<ProductGroup>> GetUnavailableProductGroups() => await pm.GetUnavailableProductGroups();
-
-        [Route("queries/user")]
         [HttpGet]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<IEnumerable<ProductGroup>>> GetProductGroupsByOwnerId() {
-            // Authentication result in X-Forwarded-User
-            Request.Headers.TryGetValue("X-Forwarded-User", out Microsoft.Extensions.Primitives.StringValues ownerId);
+        public async Task<ActionResult<IEnumerable<ProductGroup>>> GetProductGroups([FromQuery] string? filter = "all") {
 
-            if (ownerId.ToString() == null)
-                return BadRequest();
+            if (filter == "unavailable")
+            {
+                var result = await pm.GetUnavailableProductGroups();
+                return Ok(result);
+            }
 
-            var products = await pm.GetProductGroupsByOwnerId(ownerId);
-            return Ok(products);
+            if (filter == "user")
+            {
+                // Authentication result in X-Forwarded-User
+                Request.Headers.TryGetValue("X-Forwarded-User", out Microsoft.Extensions.Primitives.StringValues ownerId);
+
+                if (ownerId.ToString() == null)
+                    return BadRequest();
+
+                var products = await pm.GetProductGroupsByOwnerId(ownerId);
+                return Ok(products);
+            }
+            var allResult = await pm.GetAllProductGroups();
+            return Ok(allResult);
         }
 
 
-        [HttpGet("queries/{productGroupId}")]
+        [HttpGet("{productGroupId}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         public async Task<ActionResult<Product>> Get(string productGroupId)
@@ -93,7 +96,7 @@ namespace ProductService.API.Controllers
 
             group = await pm.CreateProductGroup(group);
             if (group.ID != string.Empty)
-                return CreatedAtAction(nameof(Get), new { id = group.ID }, group);
+                return CreatedAtAction(nameof(GetProductGroups), new { id = group.ID }, group);
             return BadRequest();
         }
 

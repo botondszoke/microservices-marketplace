@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SaleService.DAL
+namespace ProductService.DAL.BlobStorage
 {
-    public interface ISaleDatabaseSettings
+    public interface IBlobStorageSettings
     {
         public string ConnectionString { get; set; }
-        public string DatabaseName { get; set; }
-        public string CollectionName { get; set; }
+        public string ContainerName { get; set; }
     }
 }

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProductService.DAL
+namespace ProductService.DAL.ProductDatabase
 {
     public class ProductContext : IProductContext
     {

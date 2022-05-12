@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SaleService.DAL.SaleDatabase;
 
 namespace SaleService.DAL.Repositories
 {
@@ -31,7 +32,7 @@ namespace SaleService.DAL.Repositories
             return new Sale
             {
                 ID = sale.ID == string.Empty ? ObjectId.Empty : ObjectId.Parse(sale.ID),
-                OwnerID = ObjectId.Parse(sale.OwnerID),
+                OwnerID = sale.OwnerID,
                 ProductGroupID = ObjectId.Parse(sale.ProductGroupID),
                 UnitPrice = sale.UnitPrice,
                 Currency = sale.Currency.ToString()
@@ -79,8 +80,17 @@ namespace SaleService.DAL.Repositories
         {
             return await _context
                 .Sales
-                .Find(s => s.OwnerID.Equals(ObjectId.Parse(id)))
+                .Find(s => s.OwnerID.Equals(id))
                 .ConvertSalesFromDb();
+        }
+
+        public async Task<DTOs.Sale> GetSaleByProductGroupId(string id)
+        {
+            var sale = await _context
+                .Sales
+                .Find(s => s.ProductGroupID.Equals(ObjectId.Parse(id)))
+                .FirstOrDefaultAsync();
+            return SaleConverter.ConvertFromDb(sale);
         }
 
         public async Task<IReadOnlyCollection<DTOs.Sale>> FindSales(FilterDefinition<Sale> filter)

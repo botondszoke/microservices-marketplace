@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Converters;
 using SaleService.BL;
-using SaleService.DAL;
+using SaleService.DAL.SaleDatabase;
 using SaleService.DAL.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,14 +12,10 @@ builder.Services.AddCors(options =>
         builder => {
             builder.WithOrigins("http://localhost:3000")
             .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
-    options.AddDefaultPolicy(
-        builder =>
-        {
-            builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-        });
+            .AllowAnyMethod().AllowCredentials();
+    }); 
 });
+
 
 // Add services to the container.
 

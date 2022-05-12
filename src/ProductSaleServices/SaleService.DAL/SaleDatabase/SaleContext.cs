@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SaleService.DAL
+namespace SaleService.DAL.SaleDatabase
 {
     public class SaleContext : ISaleContext
     {

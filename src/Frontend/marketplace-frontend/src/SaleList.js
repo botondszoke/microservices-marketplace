@@ -42,6 +42,7 @@ class SaleList extends React.Component {
 
     render() {
         const sales = [];
+        const emptyMessage = <Typography variant="h6" sx={{margin: "12px 0"}}>Currently, there are no sales yet. Be the first one, upload your products and put them on sale!</Typography>
         if (this.state.loaded) {
             for (let i = 0; i < this.state.sales.length; i++) {
                 sales.push(
@@ -51,7 +52,7 @@ class SaleList extends React.Component {
                     />
                 );
             }
-            const salesList = sales.length === 0 ? null : sales;
+            const salesList = sales.length === 0 ? emptyMessage : sales;
             return (
                 <Container>
                     <Box sx={{textAlign: "center", margin: "36px 0 18px 0"}}>

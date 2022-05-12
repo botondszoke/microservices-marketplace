@@ -41,10 +41,105 @@ services:
     ports: 
       - 27018:27017
   
-  traefik_gatevay:
+  traefik-gateway:
     image: traefik:v2.6
-    container_name: traefik_gateway
+    container_name: traefik-gateway
     networks:
+      - web
+  
+  traefik-forward-auth:
+    image: funkypenguin/traefik-forward-auth
+    container_name: traefik-forward-auth
+    environment:
+      - CLIENT_ID=buyte-backend 
+      - CLIENT_SECRET=SSEGEb4is6W5hGlJvpDDKpTZtriVbIEA
+      - OIDC_ISSUER=http://keycloak.localhost/auth/realms/buyte
+      - SECRET=secretSECRET
+      - INSECURE_COOKIE=true
+      - LOG_LEVEL=debug
+      - AUTH_HOST=auth.localhost
+      - COOKIE_DOMAIN=localhost 
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.forwardauth.loadbalancer.server.port=4181"
+      - "traefik.http.routers.forwardauth.entrypoints=web"
+      - "traefik.http.routers.forwardauth.rule=Host(`auth.localhost`) && Path(`/_oauth`)"
+      - "traefik.http.routers.forwardauth.middlewares=traefik-forward-auth"
+      
+      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181"
+      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User"
+      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.trustForwardHeader=true"
+    networks:
+      - web
+
+  whoami:
+    image: traefik/whoami
+    container_name: whoami
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.entrypoints=web"
+      - "traefik.http.routers.whoami.rule=Host(`whoami.localhost`)"
+      - "traefik.http.routers.whoami.middlewares=traefik-forward-auth"
+    networks:
+      - web
+
+  keycloak:
+    image: jboss/keycloak:16.1.1
+    container_name: keycloak
+    ports:
+      - 8081:80
+    command: ["-Djboss.http.port=80"]
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=K3ycloak4dmin
+      - DB_VENDOR=postgres
+      - DB_ADDR=auth-db
+      - DB_DATABASE=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=P05tgre5pw
+      - PROXY_ADDRESS_FORWARDING=true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.keycloak.entrypoints=web"
+      - "traefik.http.routers.keycloak.rule=Host(`keycloak.localhost`)"
+
+    networks:
+      backend:
+        aliases:
+          - keycloak
+      web:
+        aliases:
+          - keycloak.localhost
+    depends_on:
+      - postgres
+  
+  postgres:
+    image: postgres:14.2
+    container_name: auth-db
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=P05tgre5pw
+    volumes:
+      - postgres_vol:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  azure-emulator:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: azurite
+    command: "azurite-blob --blobHost 0.0.0.0 --blobPort 10000"
+    ports:
+      - 10000:10000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.azure.rule=Host(`localhost`) && PathPrefix(`/devstoreaccount1`)"
+      - "traefik.http.routers.azure.entrypoints=web"
+      - "traefik.http.services.azure.loadbalancer.server.port=10000"
+    networks:
+      - backend
       - web
 
 networks:
@@ -54,4 +149,9 @@ networks:
   backend:
     external: false
     name: backend
+
+volumes:
+  postgres_vol:
+    external: false
+    name: postgres_vol
 

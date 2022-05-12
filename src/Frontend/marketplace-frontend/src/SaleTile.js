@@ -1,4 +1,5 @@
 import React from 'react';
+import ApiManager from './ApiManager';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
@@ -25,7 +26,7 @@ class SaleTile extends React.Component {
                 <CardMedia
                     component="img"
                     height="200"
-                    image = {this.state.sale.productGroup.sampleProduct.pictureLinks.length === 0 ? '../images/default.jpg' : this.state.sale.productGroup.sampleProduct.pictureLinks[0]}
+                    image = {this.state.sale.productGroup.sampleProduct.pictureLinks.length === 0 ? '../images/default.jpg' : (ApiManager.getBlobBaseURL() + this.state.sale.productGroup.sampleProduct.pictureLinks[0])}
                     alt={this.state.sale.productGroup.sampleProduct.pictureLinks.length === 0 ? 'default picture' : this.state.sale.productGroup.sampleProduct.pictureLinks[0]}
                 />
                 <CardContent>

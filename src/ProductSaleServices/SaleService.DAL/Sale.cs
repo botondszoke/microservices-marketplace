@@ -14,7 +14,7 @@ namespace SaleService.DAL
         public ObjectId ID { get; set; }
 
         [BsonElement("ownerId")]
-        public ObjectId OwnerID { get; set; }
+        public string OwnerID { get; set; }
 
         [BsonElement("productGroupId")]
         public ObjectId ProductGroupID { get; set; }

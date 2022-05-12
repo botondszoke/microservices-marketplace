@@ -4,13 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProductService.DAL
+namespace SaleService.DAL.SaleDatabase
 {
-    public class ProductDatabaseSettings: IProductDatabaseSettings
+    public class SaleDatabaseSettings : ISaleDatabaseSettings
     {
         public string ConnectionString { get; set; }
         public string DatabaseName { get; set; }
-        public string ProductCollectionName { get; set; }
-        public string ProductGroupCollectionName { get; set; }
+        public string CollectionName { get; set; }
     }
 }

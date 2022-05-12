@@ -11,8 +11,15 @@ import Paper from "@mui/material/Paper";
 import RemoveSharpIcon from '@mui/icons-material/RemoveSharp';
 import Carousel from "react-material-ui-carousel";
 import Typography from "@mui/material/Typography";
-import { TextField } from "@mui/material";
+import { useKeycloak } from '@react-keycloak/web';
 
+function WhoAmI() {
+    const {keycloak, initialized} = useKeycloak();
+
+    return(
+        initialized ? keycloak.tokenParsed.email : ""
+    );
+}
 
 class SaleDetails extends React.Component {
     constructor(props) {
@@ -23,6 +30,7 @@ class SaleDetails extends React.Component {
             loaded: false,
             userQuantity: 1,
             userId: "",
+            zero: false,
         }
     }
 
@@ -43,16 +51,21 @@ class SaleDetails extends React.Component {
     }
 
     async buyProduct() {      
-        await ApiManager.sellProductFromGroup(this.state.sale.productGroup, this.state.userId);
+        //todo ki a user :)
+        await ApiManager.sellProductFromGroup(this.state.sale.productGroup, this.state.userId, this.state.userQuantity);
     }
 
     async componentDidMount() {
         const item = await ApiManager.getSale(this.state.id);
-        if (item.productGroup.sampleProduct.pictureLinks.length === 0)
+        let zero = false;
+        if (item.productGroup.sampleProduct.pictureLinks.length === 0) {
+            zero = true;
             item.productGroup.sampleProduct.pictureLinks.push("../images/default.jpg");
+        }
         this.setState({
             sale: item,
             loaded: true,
+            zero: zero,
         });
     }
     render() {
@@ -75,9 +88,6 @@ class SaleDetails extends React.Component {
                 actions.push(<div key={4} id="priceAndActions">
                                 <Typography sx={{margin: "20px 20px 7px 0px"}} gutterBottom variant="h5" component="div">Total price: {this.state.sale.unitPrice * this.state.userQuantity} {this.state.sale.currency}</Typography>
                                 <Button sx={{margin: "0px 7px 7px 0px", display:"inline-block", textTransform: "none", fontSize: "16px"}} color="basic" variant="contained" onClick={() => this.buyProduct()}>Buy it now!</Button>
-                                <TextField sx={{margin: "0px 0px 7px 0px", display:"inline-block"}} label="TEMP_FIELD_Buyer_ID" color="basic" onChange={(event) => this.setState({
-                                    userId: event.target.value,
-                                })}>Buy it now!</TextField>
                             </div>);
             }
             return (
@@ -86,11 +96,13 @@ class SaleDetails extends React.Component {
 
                     <Box id={this.state.sale.productGroup.sampleProduct.pictureLinks.length === 1 ? "pictureSmall" : "picturesSmall"} sx={{maxWidth: "100%", maxHeight: "100%", padding: "12px", display: {xs: "block", md: "none"}}}> 
                         <Carousel
-                        animation="slide"
                         navButtonsAlwaysInvisible
+                        changeOnFirstRender
+                        autoplay={false}
+                        interval={15000}
                         >
                             {this.state.sale.productGroup.sampleProduct.pictureLinks.map(link => 
-                                <img key ={link} src={link} className="sliderimg" alt="" width="100%"/>)
+                                <img key={link} src={this.state.zero ? link : ApiManager.getBlobBaseURL() + link} className="sliderimg" alt="" width="100%"/>)
                             }
                         </Carousel>
                     </Box>
@@ -100,11 +112,13 @@ class SaleDetails extends React.Component {
                     <Box id="flexi" sx={{display:"flex", justifyContent:"space-evenly"}}>
                         <Box id={this.state.sale.productGroup.sampleProduct.pictureLinks.length === 1 ? "pictureBig" : "picturesBig"} sx={{flexGrow: 0, minWidth: "calc(45% - 24px)", maxWidth: "calc(45% - 24px)", padding: "12px", display: {xs: "none", md: "block"}, height:"100%"}}>
                             <Carousel
-                            animation="slide"
                             navButtonsAlwaysInvisible
+                            changeOnFirstRender
+                            autoplay={false}
+                            interval={15000}
                             >
                                 {this.state.sale.productGroup.sampleProduct.pictureLinks.map(link => 
-                                    <img key={link} src={link} className="sliderimg" alt="" width="100%"/>)
+                                    <img key={link} src={this.state.zero ? link : ApiManager.getBlobBaseURL() + link} className="sliderimg" alt="" width="100%"/>)
                                 }
                             </Carousel>
                         </Box>

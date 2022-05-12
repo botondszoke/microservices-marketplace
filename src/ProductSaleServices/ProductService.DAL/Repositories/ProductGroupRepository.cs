@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
+using ProductService.DAL.ProductDatabase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,7 +33,7 @@ namespace ProductService.DAL.Repositories
             return new ProductGroup
             {
                 ID = productGroup.ID == string.Empty ? ObjectId.Empty : ObjectId.Parse(productGroup.ID),
-                OwnerID = ObjectId.Parse(productGroup.OwnerID),
+                OwnerID = productGroup.OwnerID,
                 SampleProduct = ProductConverter.ConvertToDb(productGroup.SampleProduct),
                 //ProductIDs = productGroup.ProductIDs.Select(p => ObjectId.Parse(p.ToString())).ToArray(), 
                 Quantity = productGroup.Quantity
@@ -80,7 +81,7 @@ namespace ProductService.DAL.Repositories
         {
             return await _context
                 .ProductGroups
-                .Find(p => p.OwnerID.Equals(ObjectId.Parse(ownerId)))
+                .Find(p => p.OwnerID.Equals(ownerId))
                 .ConvertProductGroupsFromDb();
         }
 

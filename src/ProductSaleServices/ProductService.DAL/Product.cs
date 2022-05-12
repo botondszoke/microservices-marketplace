@@ -14,7 +14,7 @@ namespace ProductService.DAL
         public ObjectId ID { get; set; }
 
         [BsonElement("ownerId")]
-        public ObjectId OwnerID { get; set; }
+        public string OwnerID { get; set; }
 
         [BsonElement("groupId")]
         public ObjectId? GroupID { get; set; }

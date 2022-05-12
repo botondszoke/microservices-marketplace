@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import {BrowserRouter} from 'react-router-dom';
 import App from './App.js';
 import reportWebVitals from './reportWebVitals';
+import { ReactKeycloakProvider } from '@react-keycloak/web'
+import keycloak from './Keycloak.js';
 import "./index.css";
 
 ReactDOM.render(
@@ -17,10 +19,11 @@ ReactDOM.render(
 
 ReactDOM.render(
   <React.StrictMode>
-    <BrowserRouter>
-      
-      <App />
-    </BrowserRouter>
+    <ReactKeycloakProvider authClient={keycloak}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </ReactKeycloakProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );

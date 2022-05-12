@@ -13,11 +13,12 @@ namespace ProductService.BL
     {
         private readonly IProductRepository _productRepository;
         private readonly IProductGroupRepository _productGroupRepository;
+        private readonly IBlobRepository _blobRepository;
 
         private bool CheckCompatibility (Product p1, Product p2)
         {
             if (p1.GroupID == p2.GroupID && p1.OwnerID == p2.OwnerID && p1.Condition == p2.Condition &&
-                p1.Description == p2.Description && p1.Name == p2.Name && p1.PictureLinks.SequenceEqual(p2.PictureLinks) &&
+                p1.Description == p2.Description && p1.Name == p2.Name && //p1.PictureLinks.SequenceEqual(p2.PictureLinks) &&
                 p1.IsAvailable == p2.IsAvailable)
             {
                 return true;
@@ -25,10 +26,11 @@ namespace ProductService.BL
             return false;
         }
 
-        public ProductManager(IProductRepository productRepository, IProductGroupRepository productGroupRepository)
+        public ProductManager(IProductRepository productRepository, IProductGroupRepository productGroupRepository, IBlobRepository blobRepository)
         {
             _productRepository = productRepository;
             _productGroupRepository = productGroupRepository;
+            _blobRepository = blobRepository;
         }
 
         public async Task<IReadOnlyCollection<Product>> GetAllProducts()
@@ -44,7 +46,33 @@ namespace ProductService.BL
         {
             if (product.GroupID != null)
                 return string.Empty;
-            return await _productRepository.CreateProduct(product);
+
+            if (product.PictureLinks.Length != product.EncodedPictures.Length || product.PictureLinks.Length > 5)
+                return string.Empty;
+
+            using (var tran = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TransactionOptions() { IsolationLevel = IsolationLevel.RepeatableRead },
+                TransactionScopeAsyncFlowOption.Enabled))
+            {
+                for (int i = 0; i < product.EncodedPictures.Length; i++)
+                {
+                    var blob = new Blob
+                    {
+                        Content = product.EncodedPictures[i],
+                    };
+                    var name = await _blobRepository.CreateBlob(product.PictureLinks[i], blob);
+                    if (name == string.Empty)
+                        return string.Empty;
+                    product.PictureLinks[i] = name;
+
+                }
+                var id = await _productRepository.CreateProduct(product);
+                if (id == string.Empty)
+                    return id;
+                tran.Complete();
+                return id;
+            }
         }
 
         public async Task<bool> UpdateProduct(string id, Product oldProduct, Product newProduct)
@@ -58,10 +86,11 @@ namespace ProductService.BL
                 oldProduct.Name != newProduct.Name ||
                 !oldProduct.PictureLinks.SequenceEqual(newProduct.PictureLinks)))
                 return false;
-
+            
             // Ha csoporthoz akarjuk hozzáadni, ellenőrizzük a megfelelőséget
-            if (newProduct.GroupID != oldProduct.GroupID)
+            if (newProduct.GroupID != oldProduct.GroupID )//&& oldProduct.PictureLinks == newProduct.PictureLinks)
             {
+                // Kivesszük csoportból
                 if (newProduct.GroupID == null)
                 {
                     using (var tran = new TransactionScope(
@@ -72,6 +101,7 @@ namespace ProductService.BL
                         var result = await _productGroupRepository.RemoveProductFromGroup(oldProduct.GroupID);
                         if (result == false)
                             return false;
+                        newProduct.IsAvailable = true;
                         result = await _productRepository.UpdateProduct(id, newProduct);
                         if (result == false)
                             return false;
@@ -79,6 +109,8 @@ namespace ProductService.BL
                         return true;
                     }
                 }
+
+                // Hozzáadjuk csoporthoz
 
                 else if (oldProduct.GroupID == null)
                 {
@@ -106,6 +138,7 @@ namespace ProductService.BL
                     }
                 }
 
+                // Egyik csoportból a másikba
                 else
                 {
                     using (var tran = new TransactionScope(
@@ -137,6 +170,8 @@ namespace ProductService.BL
                 }
             }
 
+
+            // A csoport nem változik
             else
             {
                 if (newProduct.GroupID != null)
@@ -144,11 +179,83 @@ namespace ProductService.BL
                     var newGroup = await _productGroupRepository.GetProductGroupOrNull(newProduct.GroupID);
                     if (newGroup == null)
                         return false;
+                    //newProduct.PictureLinks = newGroup.SampleProduct.PictureLinks;
                     if (!CheckCompatibility(newProduct, newGroup.SampleProduct))
                         return false;
                 }
 
-                return await _productRepository.UpdateProduct(id, newProduct);
+                using (var tran = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TransactionOptions() { IsolationLevel = IsolationLevel.RepeatableRead },
+                TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    // Ha több kép lett
+                    if (newProduct.PictureLinks.Length > oldProduct.PictureLinks.Length)
+                    {
+                        for (int i = 0; i < oldProduct.PictureLinks.Length; i++)
+                        {
+                            if (oldProduct.PictureLinks[i] != newProduct.PictureLinks[i])
+                            {
+                                var deleteResult = await _blobRepository.DeleteBlob(oldProduct.PictureLinks[i]);
+                                if (deleteResult == false)
+                                    return false;
+
+                                var blob = new Blob
+                                {
+                                    Content = newProduct.EncodedPictures[i],
+                                };
+                                var name = await _blobRepository.CreateBlob(newProduct.PictureLinks[i], blob);
+                                if (name == string.Empty)
+                                    return false;
+                                newProduct.PictureLinks[i] = name;
+                            }
+                        }
+                        for (int i = oldProduct.PictureLinks.Length; i < newProduct.PictureLinks.Length; i++)
+                        {
+                            var blob = new Blob
+                            {
+                                Content = newProduct.EncodedPictures[i],
+                            };
+                            var name = await _blobRepository.CreateBlob(newProduct.PictureLinks[i], blob);
+                            if (name == string.Empty)
+                                return false;
+                            newProduct.PictureLinks[i] = name;
+                        }
+                    }
+                    // Ha kevesebb vagy ugyanannyi kép lett
+                    else
+                    {
+                        for (int i = 0; i < newProduct.PictureLinks.Length; i++)
+                        {
+                            if (oldProduct.PictureLinks[i] != newProduct.PictureLinks[i])
+                            {
+                                var deleteResult = await _blobRepository.DeleteBlob(oldProduct.PictureLinks[i]);
+                                if (deleteResult == false)
+                                    return false;
+
+                                var blob = new Blob
+                                {
+                                    Content = newProduct.EncodedPictures[i],
+                                };
+                                var name = await _blobRepository.CreateBlob(newProduct.PictureLinks[i], blob);
+                                if (name == string.Empty)
+                                    return false;
+                                newProduct.PictureLinks[i] = name;
+                            }
+                        }
+                        for (int i = newProduct.PictureLinks.Length; i < oldProduct.PictureLinks.Length; i++)
+                        {
+                            var deleteResult = await _blobRepository.DeleteBlob(oldProduct.PictureLinks[i]);
+                            if (deleteResult == false)
+                                return false;
+                        }
+                    }
+                    var result = await _productRepository.UpdateProduct(id, newProduct);
+                    if (result == false)
+                        return false;
+                    tran.Complete();
+                    return true;
+                }
             }
 
         }
@@ -158,24 +265,30 @@ namespace ProductService.BL
             if (!product.IsAvailable)
                 return false;
 
-            if (product.GroupID != null)
+            using (var tran = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TransactionOptions() { IsolationLevel = IsolationLevel.RepeatableRead },
+                TransactionScopeAsyncFlowOption.Enabled))
             {
-                using (var tran = new TransactionScope(
-                    TransactionScopeOption.Required,
-                    new TransactionOptions() { IsolationLevel = IsolationLevel.RepeatableRead },
-                    TransactionScopeAsyncFlowOption.Enabled))
+                if (product.GroupID != null)
                 {
-                    var result = await _productGroupRepository.RemoveProductFromGroup(product.GroupID);
-                    if (!result)
+                    var groupDeleteResult = await _productGroupRepository.RemoveProductFromGroup(product.GroupID);
+                    if (!groupDeleteResult)
                         return false;
-                    result = await _productRepository.DeleteProduct(id);
-                    if (!result)
-                        return false;
-                    tran.Complete();
-                    return true;
                 }
+
+                for (int i = 0; i < product.PictureLinks.Length; i++)
+                {
+                    var deleteResult = await _blobRepository.DeleteBlob(product.PictureLinks[i]);
+                    if (deleteResult == false)
+                        return false;
+                }
+                var result = await _productRepository.DeleteProduct(id);
+                if (!result)
+                    return false;
+                tran.Complete();
+                return true;
             }
-            return await _productRepository.DeleteProduct(id);
         }
 
         public async Task<bool> SoldProduct(Product product, string newOwnerId)
@@ -191,7 +304,8 @@ namespace ProductService.BL
                 Description = product.Description,
                 Condition = product.Condition,
                 IsAvailable = true,
-                PictureLinks = product.PictureLinks
+                PictureLinks = product.PictureLinks,
+                EncodedPictures = product.EncodedPictures
             };
             using (var tran = new TransactionScope(
                 TransactionScopeOption.Required,
@@ -209,7 +323,7 @@ namespace ProductService.BL
             }
         }
 
-        public async Task<Product> SoldProductFromGroup(string groupId, string newOwnerId)
+        public async Task<List<Product>> SoldProductFromGroup(string groupId, string newOwnerId, int quantity)
         {
             using (var tran = new TransactionScope(
                 TransactionScopeOption.Required,
@@ -217,15 +331,23 @@ namespace ProductService.BL
                 TransactionScopeAsyncFlowOption.Enabled))
             {
                 IReadOnlyCollection<Product> products = await _productRepository.GetProductsByGroupId(groupId);
-                if (products.Count <= 0)
-                    return new Product() { ID = string.Empty};
+                List<Product> sold = new List<Product>();
+                if (products.Count <= quantity || products.Count <= 0 /*|| products.First().OwnerID == newOwnerId*/)
+                {
+                    sold.Add(new Product() { ID = string.Empty });
+                    return sold;
+                }
 
-                var productId = products.First().ID;
-                var result = await this.SoldProduct(products.First(), newOwnerId);
-                if (result == false)
-                    return null;
+                for (int i = 0; i < quantity; i++)
+                {
+                    var productId = products.ElementAt(i).ID;
+                    var result = await this.SoldProduct(products.ElementAt(i), newOwnerId);
+                    if (result == false)
+                        return new List<Product>();
+                    sold.Add(await _productRepository.GetProductOrNull(productId));
+                }
 
-                return await _productRepository.GetProductOrNull(productId);
+                return sold;
             }
         }
     }

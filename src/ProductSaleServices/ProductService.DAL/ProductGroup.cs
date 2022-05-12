@@ -14,13 +14,10 @@ namespace ProductService.DAL
         public ObjectId ID { get; set; }
 
         [BsonElement("ownerId")]
-        public ObjectId OwnerID { get; set; }
+        public string OwnerID { get; set; }
 
         [BsonElement("sampleProduct")]
         public Product SampleProduct { get; set; }
-
-        //[BsonElement("productIds")]
-        //public ObjectId[] ProductIDs { get; set; }
 
         [BsonElement("quantity")]
         public int Quantity { get; set; }

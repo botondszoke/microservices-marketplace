@@ -13,20 +13,34 @@ namespace ProductService.API.Controllers
 
         public ProductGroupController(ProductGroupManager pm) => this.pm = pm;
 
-        [Route("queries")]
         [HttpGet]
-        public async Task<IEnumerable<ProductGroup>> Get() => await pm.GetAllProductGroups();
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<IEnumerable<ProductGroup>>> GetProductGroups([FromQuery] string? filter = "all") {
 
-        [Route("queries/unavailable")]
-        [HttpGet]
-        public async Task<IEnumerable<ProductGroup>> GetUnavailableProductGroups() => await pm.GetUnavailableProductGroups();
+            if (filter == "unavailable")
+            {
+                var result = await pm.GetUnavailableProductGroups();
+                return Ok(result);
+            }
 
-        [Route("queries/ownerId/{ownerId}")]
-        [HttpGet]
-        public async Task<IEnumerable<ProductGroup>> GetProductGroupsByOwnerId(string ownerId) => await pm.GetProductGroupsByOwnerId(ownerId);
+            if (filter == "user")
+            {
+                // Authentication result in X-Forwarded-User
+                Request.Headers.TryGetValue("X-Forwarded-User", out Microsoft.Extensions.Primitives.StringValues ownerId);
+
+                if (ownerId.ToString() == null)
+                    return BadRequest();
+
+                var products = await pm.GetProductGroupsByOwnerId(ownerId);
+                return Ok(products);
+            }
+            var allResult = await pm.GetAllProductGroups();
+            return Ok(allResult);
+        }
 
 
-        [HttpGet("queries/id/{productGroupId}")]
+        [HttpGet("{productGroupId}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         public async Task<ActionResult<Product>> Get(string productGroupId)
@@ -39,13 +53,27 @@ namespace ProductService.API.Controllers
 
         [HttpDelete("{productGroupId}")]
         [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Delete(string productGroupId)
         {
+            // Authentication result in X-Forwarded-User
+            Request.Headers.TryGetValue("X-Forwarded-User", out Microsoft.Extensions.Primitives.StringValues ownerId);
+
+            if (ownerId.ToString() == null)
+                return BadRequest();
+
             var group = await pm.GetProductGroupOrNull(productGroupId);
+            
             if (group == null)
                 return NotFound();
-            var result = await pm.DeleteProductGroup(productGroupId);
+            
+            if (ownerId.ToString() != group.OwnerID)
+                return Unauthorized();
+
+            var result = await pm.DeleteProductGroup(group);
+            
             if (!result)
                 return NotFound();
             return NoContent();
@@ -54,11 +82,21 @@ namespace ProductService.API.Controllers
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
         public async Task<IActionResult> Create([FromBody] ProductGroup group)
         {
+            // Authentication result in X-Forwarded-User
+            Request.Headers.TryGetValue("X-Forwarded-User", out Microsoft.Extensions.Primitives.StringValues ownerId);
+
+            if (ownerId.ToString() == null)
+                return BadRequest();
+
+            if (group.OwnerID != ownerId.ToString())
+                return Unauthorized();
+
             group = await pm.CreateProductGroup(group);
             if (group.ID != string.Empty)
-                return CreatedAtAction(nameof(Get), new { id = group.ID }, group);
+                return CreatedAtAction(nameof(GetProductGroups), new { id = group.ID }, group);
             return BadRequest();
         }
 
@@ -68,11 +106,19 @@ namespace ProductService.API.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> Update(string productGroupId, [FromBody] ProductGroup newProductGroup)
         {
-            if (productGroupId != newProductGroup.ID)
+            // Authentication result in X-Forwarded-User
+            Request.Headers.TryGetValue("X-Forwarded-User", out Microsoft.Extensions.Primitives.StringValues ownerId);
+
+            if (productGroupId != newProductGroup.ID || ownerId.ToString() == null)
                 return BadRequest();
+
             var productGroup = await pm.GetProductGroupOrNull(productGroupId);
+
             if (productGroup == null)
                 return NotFound();
+
+            if (productGroup.OwnerID != ownerId.ToString())
+                return Unauthorized();
 
             var result = await pm.UpdateProductGroup(productGroupId, productGroup, newProductGroup);
             if (!result)

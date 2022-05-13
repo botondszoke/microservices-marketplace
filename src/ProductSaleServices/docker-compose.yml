@@ -141,6 +141,15 @@ services:
     networks:
       - backend
       - web
+  
+  rabbitmq-container:
+    image: rabbitmq:3-management
+    container_name: rabbit-mq
+    networks:
+      - backend
+    environment:
+      - RABBITMQ_DEFAULT_USER=buyte
+      - RABBITMQ_DEFAULT_PASS=Buyt3PW
 
 networks:
   web:

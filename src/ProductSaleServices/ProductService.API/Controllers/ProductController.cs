@@ -153,7 +153,7 @@ namespace ProductService.API.Controllers
             if (ownerId.ToString() == null)
                 return BadRequest();
 
-            if (quantity < 0)
+            if (quantity <= 0)
                 return BadRequest();
 
             //TODO: Check if Group owner == ownerID move to here instead of function...
@@ -164,6 +164,8 @@ namespace ProductService.API.Controllers
             
             if (result[0].ID == string.Empty)
                 return NotFound();
+
+            var emailResult = await pm.SendPurchaseEmail(result[0], quantity, ownerId.ToString());
 
             return Ok(result);
         }

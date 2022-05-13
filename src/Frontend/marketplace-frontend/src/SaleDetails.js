@@ -11,15 +11,7 @@ import Paper from "@mui/material/Paper";
 import RemoveSharpIcon from '@mui/icons-material/RemoveSharp';
 import Carousel from "react-material-ui-carousel";
 import Typography from "@mui/material/Typography";
-import { useKeycloak } from '@react-keycloak/web';
 
-function WhoAmI() {
-    const {keycloak, initialized} = useKeycloak();
-
-    return(
-        initialized ? keycloak.tokenParsed.email : ""
-    );
-}
 
 class SaleDetails extends React.Component {
     constructor(props) {
@@ -53,6 +45,8 @@ class SaleDetails extends React.Component {
     async buyProduct() {      
         //todo ki a user :)
         await ApiManager.sellProductFromGroup(this.state.sale.productGroup, this.state.userId, this.state.userQuantity);
+        //navigate hook-al kéne
+        window.location = "http://localhost:3000/myproducts";
     }
 
     async componentDidMount() {

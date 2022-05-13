@@ -4,6 +4,7 @@ using ProductService.BL;
 using ProductService.DAL.ProductDatabase;
 using ProductService.DAL.Repositories;
 using ProductService.DAL.BlobStorage;
+using ProductService.DAL.EmailService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,9 @@ builder.Services.Configure<ProductDatabaseSettings>(
 builder.Services.Configure<BlobStorageSettings>(
     builder.Configuration.GetSection("AzureBlobStorageSettings"));
 
+builder.Services.Configure<EmailServiceSettings>(
+    builder.Configuration.GetSection("EmailServiceSettings"));
+
 /*builder.Services.AddSingleton(
     x => new BlobServiceClient(builder.Configuration.GetValue<string>("AzureBlobStorageConnectionString")));*/
 
@@ -36,11 +40,17 @@ builder.Services.AddSingleton<IProductDatabaseSettings>(
 builder.Services.AddSingleton<IBlobStorageSettings>(
     s => s.GetRequiredService<IOptions<BlobStorageSettings>>().Value);
 
+builder.Services.AddSingleton<IEmailServiceSettings>(
+    s => s.GetRequiredService<IOptions<EmailServiceSettings>>().Value);
+
 builder.Services.AddSingleton<ProductDatabaseSettings>();
 builder.Services.AddSingleton<BlobStorageSettings>();
+builder.Services.AddSingleton<EmailServiceSettings>();
 builder.Services.AddSingleton<IProductContext, ProductContext>();
 builder.Services.AddSingleton<IBlobContext, BlobContext>();
+builder.Services.AddSingleton<IEmailServiceContext, EmailServiceContext>();
 builder.Services.AddScoped<IBlobRepository, BlobRepository>();
+builder.Services.AddScoped<IEmailSenderRepository, EmailSenderRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductGroupRepository, ProductGroupRepository>();
 

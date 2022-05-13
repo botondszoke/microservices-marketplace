@@ -14,6 +14,7 @@ namespace ProductService.BL
         private readonly IProductRepository _productRepository;
         private readonly IProductGroupRepository _productGroupRepository;
         private readonly IBlobRepository _blobRepository;
+        private readonly IEmailSenderRepository _emailSenderRepository;
 
         private bool CheckCompatibility (Product p1, Product p2)
         {
@@ -26,11 +27,12 @@ namespace ProductService.BL
             return false;
         }
 
-        public ProductManager(IProductRepository productRepository, IProductGroupRepository productGroupRepository, IBlobRepository blobRepository)
+        public ProductManager(IProductRepository productRepository, IProductGroupRepository productGroupRepository, IBlobRepository blobRepository, IEmailSenderRepository emailSenderRepository)
         {
             _productRepository = productRepository;
             _productGroupRepository = productGroupRepository;
             _blobRepository = blobRepository;
+            _emailSenderRepository = emailSenderRepository;
         }
 
         public async Task<IReadOnlyCollection<Product>> GetAllProducts()
@@ -332,7 +334,7 @@ namespace ProductService.BL
             {
                 IReadOnlyCollection<Product> products = await _productRepository.GetProductsByGroupId(groupId);
                 List<Product> sold = new List<Product>();
-                if (products.Count <= quantity || products.Count <= 0 /*|| products.First().OwnerID == newOwnerId*/)
+                if (products.Count < quantity || products.Count <= 0 /*|| products.First().OwnerID == newOwnerId*/)
                 {
                     sold.Add(new Product() { ID = string.Empty });
                     return sold;
@@ -350,5 +352,8 @@ namespace ProductService.BL
                 return sold;
             }
         }
+
+        public async Task<bool> SendPurchaseEmail(Product product, int quantity, string ownerID)
+            => await _emailSenderRepository.SendPurchaseEmail(product, quantity, ownerID);
     }
 }

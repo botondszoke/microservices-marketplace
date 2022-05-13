@@ -144,12 +144,39 @@ services:
   
   rabbitmq-container:
     image: rabbitmq:3-management
-    container_name: rabbit-mq
+    container_name: rabbitmq
     networks:
       - backend
     environment:
       - RABBITMQ_DEFAULT_USER=buyte
       - RABBITMQ_DEFAULT_PASS=Buyt3PW
+  
+  email-api:
+    image: email-api
+    container_name: email-api
+    build:
+      context: .
+      dockerfile: EmailAPI/Dockerfile
+    environment:
+      - SPRING_RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - rabbitmq-container
+    networks:
+      - backend
+  
+  email-service:
+    image: email-service
+    container_name: email-service
+    build:
+      context: .
+      dockerfile: EmailService/Dockerfile
+    environment:
+      - SPRING_RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - rabbitmq-container
+    networks:
+      - backend
+    
 
 networks:
   web:

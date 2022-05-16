@@ -99,6 +99,9 @@ services:
       - DB_USER=postgres
       - DB_PASSWORD=P05tgre5pw
       - PROXY_ADDRESS_FORWARDING=true
+      - KEYCLOAK_IMPORT=/tmp/realm-test.json
+    volumes:
+      - ./realm-export.json:/tmp/realm-test.json
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.keycloak.entrypoints=web"

@@ -1,7 +1,8 @@
 import React from 'react';
-import ApiManager from './ApiManager.js';
+import ApiManager from '../services/ApiManager.js';
+import Box from "@mui/material/Box";
 import { useNavigate } from "react-router-dom";
-import ProductDataGrid from './ProductDataGrid.js';
+import ProductDataGrid from '../components/ProductDataGrid.js';
 import { CircularProgress } from '@mui/material';
 
 
@@ -172,7 +173,9 @@ function MyProducts() {
     }
 
     return (
-        <CircularProgress />
+        <Box sx={{textAlign: "center", margin: "15% 0 18px 0"}}>
+            <CircularProgress color="basic" size={60}/>
+        </Box>
     );
 }
 

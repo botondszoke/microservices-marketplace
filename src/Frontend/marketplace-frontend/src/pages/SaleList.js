@@ -1,10 +1,10 @@
 import React from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
-import ApiManager from './ApiManager';
+import ApiManager from '../services/ApiManager';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
-import SaleTile from './SaleTile';
+import SaleTile from '../components/SaleTile';
 import Typography from '@mui/material/Typography';
 
 class SaleList extends React.Component {
@@ -67,7 +67,9 @@ class SaleList extends React.Component {
             );
         };
         return (
-            <CircularProgress />
+            <Box sx={{textAlign: "center", margin: "15% 0 18px 0"}}>
+                <CircularProgress color="basic" size={60}/>
+            </Box>
         );
     };
 

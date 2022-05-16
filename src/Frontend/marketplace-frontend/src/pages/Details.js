@@ -1,5 +1,5 @@
 import React from 'react';
-import ApiManager from './ApiManager.js';
+import ApiManager from '../services/ApiManager.js';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -64,6 +64,7 @@ function Details(props) {
         }
     }
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     React.useEffect(() => {getData();}, []);
 
     const uploadAndToProduct = async (finalProduct) => {
@@ -153,7 +154,7 @@ function Details(props) {
             if (response) {
                 let finalGroup = group;
                 finalGroup.sampleProduct.isAvailable = false;
-                let response = await ApiManager.editProductGroup(finalGroup);
+                await ApiManager.editProductGroup(finalGroup);
             }
         }
         else if (saleID !== "" && onSale){
@@ -164,14 +165,14 @@ function Details(props) {
                 unitPrice: parseFloat(unitPrice),
                 currency: currency,
             }
-            let response = await ApiManager.editSale(finalSale);
+            await ApiManager.editSale(finalSale);
         }
         else if (saleID !== "" && !onSale) {
             let response = await ApiManager.deleteSale(saleID);
             if (response) {
                 let finalGroup = group;
                 finalGroup.sampleProduct.isAvailable = true;
-                let response = await ApiManager.editProductGroup(finalGroup);
+                await ApiManager.editProductGroup(finalGroup);
             }
         }
         navigate("/myproducts");
@@ -252,7 +253,9 @@ function Details(props) {
 
     if (!loaded || (props.mode === "edit" && (typeof name === "undefined" || typeof condition === "undefined" || typeof description === "undefined" || typeof pictureNames === "undefined" ))) {
         return (
-            <CircularProgress />
+            <Box sx={{textAlign: "center", margin: "15% 0 18px 0"}}>
+                <CircularProgress color="basic" size={60}/>
+            </Box>
         );
     }
     return (

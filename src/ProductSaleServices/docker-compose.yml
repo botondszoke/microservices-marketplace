@@ -48,22 +48,23 @@ services:
       - web
   
   traefik-forward-auth:
-    image: funkypenguin/traefik-forward-auth
+    image: thomseddon/traefik-forward-auth:2
     container_name: traefik-forward-auth
     environment:
-      - CLIENT_ID=buyte-backend 
-      - CLIENT_SECRET=SSEGEb4is6W5hGlJvpDDKpTZtriVbIEA
-      - OIDC_ISSUER=http://keycloak.localhost/auth/realms/buyte
+      - DEFAULT_PROVIDER=oidc
       - SECRET=secretSECRET
+      - PROVIDERS_OIDC_CLIENT_ID=buyte-backend
+      - PROVIDERS_OIDC_CLIENT_SECRET=SSEGEb4is6W5hGlJvpDDKpTZtriVbIEA
+      - PROVIDERS_OIDC_ISSUER_URL=http://keycloak.localhost/auth/realms/buyte
+      - AUTH_HOST=auth.keycloak.localhost
+      - COOKIE_DOMAIN=keycloak.localhost
       - INSECURE_COOKIE=true
       - LOG_LEVEL=debug
-      - AUTH_HOST=auth.localhost
-      - COOKIE_DOMAIN=localhost 
     labels:
       - "traefik.enable=true"
       - "traefik.http.services.forwardauth.loadbalancer.server.port=4181"
       - "traefik.http.routers.forwardauth.entrypoints=web"
-      - "traefik.http.routers.forwardauth.rule=Host(`auth.localhost`) && Path(`/_oauth`)"
+      - "traefik.http.routers.forwardauth.rule=Host(`auth.keycloak.localhost`) && PathPrefix(`/_oauth`)"
       - "traefik.http.routers.forwardauth.middlewares=traefik-forward-auth"
       
       - "traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181"

@@ -11,12 +11,23 @@ const saleApi = Axios.create({
     withCredentials: true,
 });
 
+const forwardAuth = Axios.create({
+    baseURL: 'http://auth.keycloak.localhost/_oauth',
+    withCredentials: true,
+})
+
 const blobBaseURL = "http://localhost/devstoreaccount1/buyte-images-container/";
 
 class ApiManager extends React.Component {
 
     static getBlobBaseURL() {
       return blobBaseURL;
+    }
+
+    static async logout() {
+      await forwardAuth.get('/logout').then((response) => {
+        console.log(response);
+      })
     }
 
     static async getAllProducts() {

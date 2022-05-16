@@ -1,4 +1,5 @@
 import React from 'react';
+import Box from "@mui/material/Box";
 import CircularProgress from '@mui/material/CircularProgress';
 import { Navigate } from 'react-router-dom';
 import { useKeycloak } from '@react-keycloak/web';
@@ -9,9 +10,11 @@ export function PrivateRoute({ children }) {
 
     return (
         initialized ? (
-            keycloak.authenticated ? children : <Navigate to="/"/>
+            keycloak.authenticated ? children : <Navigate to="/login"/>
         ) : (
-            <CircularProgress />   
+            <Box sx={{textAlign: "center", margin: "15% 0 18px 0"}}>
+                <CircularProgress color="basic" size={60}/>
+            </Box>   
         )
     )
 }

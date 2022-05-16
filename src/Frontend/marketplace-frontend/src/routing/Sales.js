@@ -1,21 +1,21 @@
 import React from "react";
 import {Route, Routes, useParams} from "react-router-dom";
-import Details from "./Details.js";
-import MyProducts from "./MyProducts.js";
+import SaleList from "../pages/SaleList.js"
+import SaleDetails from "../pages/SaleDetails.js";
 
-function Products() {
+function Sales() {
     
     const Wrapper = (props) => {
         const params = useParams();
-        return <Details id={params.id} mode={params.id.startsWith("g_") ? "editGroup" : "edit"} />;
+        return <SaleDetails id ={params.id} />;
     }
         
     return(
         <Routes>
-            <Route exact path="/" element={<MyProducts />} />
+            <Route exact path="/" element={<SaleList />} />
             <Route path="/:id" element={<Wrapper />} />
         </Routes>
     );
     
 }
-export default Products;
+export default Sales;

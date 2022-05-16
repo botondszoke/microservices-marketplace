@@ -1,4 +1,5 @@
 import React from 'react';
+import ApiManager from '../services/ApiManager';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -81,7 +82,15 @@ function Controls() {
                       onClose={handleCloseUserMenu}
                     >
                     {settings.map((option) => (
-                        <MenuItem key={option} onClick={() => {option !== "Log out" ? routeChange(links[settings.indexOf(option)]) : keycloak.logout();  handleCloseUserMenu(); }}>
+                        <MenuItem key={option} onClick={() => {
+                          handleCloseUserMenu(); 
+                          if (option !== "Log out") {
+                            routeChange(links[settings.indexOf(option)])
+                          }
+                          else {
+                            ApiManager.logout(); 
+                            keycloak.logout();
+                          }   }}>
                         <Typography textAlign="center">{option}</Typography>
                         </MenuItem>
                     ))}

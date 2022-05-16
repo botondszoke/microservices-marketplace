@@ -65,6 +65,7 @@ function ProductDataGrid(props) {
                                         removeProductFromGroup={props.removeProductFromGroup}
                                         addProductToGroup={props.addProductToGroup}
                                         manageGroup={props.manageGroup}/>,
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [],
     );
     

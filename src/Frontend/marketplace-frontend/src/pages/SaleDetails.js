@@ -1,6 +1,6 @@
 import React from "react";
 import AddSharpIcon from '@mui/icons-material/AddSharp';
-import ApiManager from "./ApiManager";
+import ApiManager from "../services/ApiManager";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
@@ -135,7 +135,11 @@ class SaleDetails extends React.Component {
                 </Paper>
             );
         }
-        return (<CircularProgress />);
+        return (
+        <Box sx={{textAlign: "center", margin: "15% 0 18px 0"}}>
+            <CircularProgress color="basic" size={60}/>
+        </Box>
+        );
     }
 }
 

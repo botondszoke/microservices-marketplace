@@ -5,6 +5,8 @@ using ProductService.DAL.ProductDatabase;
 using ProductService.DAL.Repositories;
 using ProductService.DAL.BlobStorage;
 using ProductService.DAL.EmailService;
+using Polly;
+using Polly.Extensions.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,13 @@ builder.Services.AddCors(options =>
 });
 
 
+static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+{
+    return HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound)
+        .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+}
 
 // Add services to the container.
 builder.Services.Configure<ProductDatabaseSettings>(
@@ -48,6 +57,7 @@ builder.Services.AddSingleton<BlobStorageSettings>();
 builder.Services.AddSingleton<EmailServiceSettings>();
 builder.Services.AddSingleton<IProductContext, ProductContext>();
 builder.Services.AddSingleton<IBlobContext, BlobContext>();
+builder.Services.AddHttpClient<IEmailServiceContext, EmailServiceContext>().AddPolicyHandler(GetRetryPolicy());
 builder.Services.AddSingleton<IEmailServiceContext, EmailServiceContext>();
 builder.Services.AddScoped<IBlobRepository, BlobRepository>();
 builder.Services.AddScoped<IEmailSenderRepository, EmailSenderRepository>();
@@ -80,3 +90,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+

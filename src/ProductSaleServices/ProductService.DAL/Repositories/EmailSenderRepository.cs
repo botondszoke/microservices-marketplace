@@ -28,8 +28,17 @@ namespace ProductService.DAL.Repositories
                 Quantity = quantity.ToString(),
                 ToEmail = ownerID
             };
-            HttpResponseMessage response = await _emailServiceContext.HttpClient.PostAsJsonAsync(_emailServiceContext.purchaseEndpoint, data);
-            return response.IsSuccessStatusCode;
+            bool success = true;
+            try
+            {
+                HttpResponseMessage response = await _emailServiceContext.HttpClient.PostAsJsonAsync(_emailServiceContext.purchaseEndpoint, data);
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                Console.WriteLine("Could not reach Email Service API. {0}", ex.Message);
+            }
+            return success;
         }
     }
 }

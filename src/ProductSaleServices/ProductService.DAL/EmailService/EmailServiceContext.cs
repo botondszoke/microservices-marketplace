@@ -12,9 +12,9 @@ namespace ProductService.DAL.EmailService
         public HttpClient HttpClient { get; }
         public string purchaseEndpoint { get; }
 
-        public EmailServiceContext(IEmailServiceSettings settings)
+        public EmailServiceContext(IEmailServiceSettings settings, HttpClient client)
         {
-            HttpClient = new HttpClient();
+            HttpClient = client;
             HttpClient.BaseAddress = new Uri(settings.EmailServiceAddress);
             HttpClient.DefaultRequestHeaders.Accept.Clear();
             HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
